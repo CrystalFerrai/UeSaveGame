@@ -1,6 +1,6 @@
 # Unreal Engine 4 Save Game Library
 
-This is a .NET library for reading and writing standard Unreal Engine 4 save game files. This library works with most games which do not use any custom serialization.
+This is a .NET library for reading and writing standard Unreal Engine 4 save game files. This library should work with most games which do not use any custom serialization, but may require updating for games it hasn't seen before.
 
 ## Releases
 
@@ -36,3 +36,21 @@ The first thing you should do is load a file, write it back out unchanged, then 
 ## Support
 
 This is just one of my many free time projects. No support or documentation is offered for this library beyond this readme.
+
+## Games Tested
+
+The following games have been tested using this library. Testing consists of loading a file, saving it, and checking that the output is binary equal to the input.
+
+### Working
+* Aven Colony - Technically works, but the data is just a couple large byte arrays that would need further decoding
+* Carnal Instinct - Fully working
+* Subverse - Fully working
+* Icarus: First Cohort - Fully working (only player achievement tracker save is stored locally)
+
+### Not Working
+* Dragon Quest XI - Files are compressed. Have not attempted to decompress and examine
+* Moss - Crashes, cause unknown, needs investigation
+* Satisfactory - Missing file headers, could possibly be made to work but tools exist for this game already
+
+### Will Never Work
+* Astroneer - Uses a hefty amount of custom serialization as well as compresses the file. Needs an entirely custom library to handle.
