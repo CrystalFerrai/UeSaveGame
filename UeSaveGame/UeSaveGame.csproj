@@ -61,12 +61,14 @@
     <Compile Include="PropertyTypes\DoubleProperty.cs" />
     <Compile Include="PropertyTypes\EnumProperty.cs" />
     <Compile Include="PropertyTypes\FloatProperty.cs" />
+    <Compile Include="PropertyTypes\Int64Property.cs" />
     <Compile Include="PropertyTypes\IntProperty.cs" />
     <Compile Include="PropertyTypes\MapProperty.cs" />
     <Compile Include="PropertyTypes\MulticastDelegateProperty.cs" />
     <Compile Include="PropertyTypes\NoneProperty.cs" />
     <Compile Include="PropertyTypes\ObjectProperty.cs" />
     <Compile Include="PropertyTypes\SetProperty.cs" />
+    <Compile Include="PropertyTypes\SoftObjectProperty.cs" />
     <Compile Include="PropertyTypes\StrProperty.cs" />
     <Compile Include="PropertyTypes\StructProperty.cs" />
     <Compile Include="PropertyTypes\TextProperty.cs" />

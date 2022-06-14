@@ -45,7 +45,9 @@ The following games have been tested using this library. Testing consists of loa
 * Aven Colony - Technically works, but the data is just a couple large byte arrays that would need further decoding
 * Carnal Instinct - Fully working
 * Subverse - Fully working
-* Icarus: First Cohort - Fully working (only player achievement tracker save is stored locally)
+* Icarus: First Cohort - Fully working
+    * For online play, only player achievement tracker save is stored locally
+    * For offline saves, there is a block of base64 in one of the json files. Convert it to binary, then decompress with gzip, then use `PropertySerializationHelp.ReadProperties` to read the data. (It is basically a save file with no header.)
 
 ### Not Working
 * Dragon Quest XI - Files are compressed. Have not attempted to decompress and examine

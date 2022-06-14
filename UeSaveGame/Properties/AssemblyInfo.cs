@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("UeSaveGame")]
-[assembly: AssemblyCopyright("Copyright ©2021 Crystal Ferrai")]
+[assembly: AssemblyCopyright("Copyright ©2022 Crystal Ferrai")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

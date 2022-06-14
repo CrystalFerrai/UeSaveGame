@@ -7,7 +7,7 @@ using System.Text;
 
 namespace UeSaveGame.Util
 {
-    internal static class PropertySerializationHelper
+    public static class PropertySerializationHelper
     {
         public static IEnumerable<UProperty> ReadProperties(BinaryReader reader, bool isNullTerminated)
         {
