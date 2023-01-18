@@ -1,16 +1,27 @@
-﻿using System;
-using System.IO;
-using UeSaveGame.DataTypes;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-    // Note: This type was found in Subverse. The format does not appear to match UE4 serialization code for this type.
-    // If the type is ever found elsewhere, we should check if the format is the same.
+	// Note: This type was found in Subverse. The format does not appear to match UE4 serialization code for this type.
+	// If the type is ever found elsewhere, we should check if the format is the same.
 
-    public class MulticastDelegateProperty : UProperty<UDelegate[]>
+	public class MulticastDelegateProperty : UProperty<UDelegate[]>
     {
-        public MulticastDelegateProperty(UString name, UString type)
+        public MulticastDelegateProperty(FString name, FString type)
             : base(name, type)
         {
         }
@@ -34,6 +45,8 @@ namespace UeSaveGame.PropertyTypes
 
         public override long Serialize(BinaryWriter writer, bool includeHeader)
         {
+            if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
+
             if (includeHeader)
             {
                 writer.Write((byte)0);
@@ -54,8 +67,8 @@ namespace UeSaveGame.PropertyTypes
 
     public struct UDelegate
     {
-        public UString ClassName { get; set; }
+        public FString? ClassName { get; set; }
 
-        public UString FunctionName { get; set; }
+        public FString? FunctionName { get; set; }
     }
 }

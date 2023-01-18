@@ -1,27 +1,52 @@
-﻿using UeSaveGame.Util;
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Text;
-using UeSaveGame.DataTypes;
+using UeSaveGame.Util;
 
 namespace UeSaveGame
 {
-    public class SaveGame
+    /// <summary>
+    /// Represents a UE save game file
+    /// </summary>
+	public class SaveGame
     {
         private static readonly byte[] sHeader = Encoding.ASCII.GetBytes("GVAS");
 
         internal SaveGameHeader Header { get; private set; }
         internal CustomFormatData CustomFormats { get; private set; }
 
-        public UString SaveClass { get; private set; }
+        /// <summary>
+        /// The type of the save game
+        /// </summary>
+        public FString? SaveClass { get; private set; }
 
-        public IList<UProperty> Properties { get; private set; }
+        /// <summary>
+        /// The save game's data/properties
+        /// </summary>
+        public IList<UProperty>? Properties { get; private set; }
 
         private SaveGame()
         {
         }
 
+        /// <summary>
+        /// Loads a save game from the given stream
+        /// </summary>
+        /// <param name="stream">The stream to read from</param>
+        /// <exception cref="NotSupportedException">Unsupported save game version</exception>
+        /// <exception cref="FormatException">A problem occurred trying to parse the save game</exception>
         public static SaveGame LoadFrom(Stream stream)
         {
             SaveGame instance = new SaveGame();
@@ -40,12 +65,16 @@ namespace UeSaveGame
 
                 instance.Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, true));
 
-                if (reader.BaseStream.Position != reader.BaseStream.Length) throw new ApplicationException("Did not reach the end of the file when reading.");
+                if (reader.BaseStream.Position != reader.BaseStream.Length) throw new FormatException("Did not reach the end of the file when reading.");
             }
 
             return instance;
         }
 
+        /// <summary>
+        /// Saves a save game to the given stream
+        /// </summary>
+        /// <param name="stream">The stream to write to</param>
         public void WriteTo(Stream stream)
         {
             stream.Write(sHeader, 0, sHeader.Length);
@@ -54,9 +83,9 @@ namespace UeSaveGame
             {
                 Header.Serialize(writer);
                 CustomFormats.Serialize(writer);
-                writer.WriteUnrealString(SaveClass);
+                writer.WriteUnrealString(SaveClass!);
 
-                PropertySerializationHelper.WriteProperties(Properties, writer, true);
+                PropertySerializationHelper.WriteProperties(Properties!, writer, true);
             }
         }
 
@@ -100,7 +129,7 @@ namespace UeSaveGame
         public short Minor;
         public short Patch;
         public int Build;
-        public UString BuildId;
+        public FString BuildId;
 
         public static EngineVersion Deserialize(BinaryReader reader)
         {
@@ -110,7 +139,7 @@ namespace UeSaveGame
             version.Minor = reader.ReadInt16();
             version.Patch = reader.ReadInt16();
             version.Build = reader.ReadInt32();
-            version.BuildId = reader.ReadUnrealString();
+            version.BuildId = reader.ReadUnrealString()!;
 
             return version;
         }

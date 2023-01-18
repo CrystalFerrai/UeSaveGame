@@ -1,12 +1,22 @@
-﻿using UeSaveGame.TextData;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using UeSaveGame.DataTypes;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using UeSaveGame.TextData;
 
 namespace UeSaveGame.PropertyTypes
 {
-    public class TextProperty : UProperty<ITextData>
+	public class TextProperty : UProperty<ITextData>
     {
         private static readonly Dictionary<TextHistoryType, Type> sTextDataTypes;
 
@@ -24,7 +34,7 @@ namespace UeSaveGame.PropertyTypes
             };
         }
 
-        public TextProperty(UString name, UString type)
+        public TextProperty(FString name, FString type)
             : base(name, type)
         {
         }
@@ -36,14 +46,14 @@ namespace UeSaveGame.PropertyTypes
             mFlags = (TextFlags)reader.ReadUInt32();
             mHistoryType = (TextHistoryType)reader.ReadSByte();
 
-            Type dataType;
+            Type? dataType;
             if (!sTextDataTypes.TryGetValue(mHistoryType, out dataType))
             {
                 throw new NotImplementedException($"[TextProperty] Data type {mHistoryType} is not implemented.");
             }
 
-            Value = (ITextData)Activator.CreateInstance(dataType);
-            Value.Deserialize(reader, size - (includeHeader ? 6 : 5));
+            Value = (ITextData?)Activator.CreateInstance(dataType);
+            Value?.Deserialize(reader, size - (includeHeader ? 6 : 5));
         }
 
         public override long Serialize(BinaryWriter writer, bool includeHeader)
@@ -53,7 +63,7 @@ namespace UeSaveGame.PropertyTypes
             writer.Write((int)mFlags);
             writer.Write((sbyte)mHistoryType);
 
-            return 5 + Value.Serialize(writer);
+            return 5 + (Value?.Serialize(writer) ?? 0);
         }
 
         [Flags]

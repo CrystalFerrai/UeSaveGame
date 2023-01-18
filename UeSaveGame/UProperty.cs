@@ -1,26 +1,36 @@
-﻿using UeSaveGame.PropertyTypes;
-using UeSaveGame.Util;
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Text;
-using UeSaveGame.DataTypes;
+using UeSaveGame.PropertyTypes;
+using UeSaveGame.Util;
 
 namespace UeSaveGame
 {
-    public abstract class UProperty
+	public abstract class UProperty
     {
         private static Dictionary<string, Type> sTypeMap;
 
-        public UString Name { get; }
+        public FString Name { get; }
 
-        public UString Type { get; }
+        public FString Type { get; }
 
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         protected virtual long ContentSize { get; }
 
-        protected UProperty(UString name, UString type)
+        protected UProperty(FString name, FString type)
         {
             Name = name;
             Type = type;
@@ -57,15 +67,15 @@ namespace UeSaveGame
 
         public abstract long Serialize(BinaryWriter writer, bool includeHeader);
 
-        public static UProperty Deserialize(BinaryReader reader, UString overrideName = null)
+        public static UProperty Deserialize(BinaryReader reader, FString? overrideName = null)
         {
-            UString name = reader.ReadUnrealString();
+            FString name = reader.ReadUnrealString() ?? throw new FormatException("Error reading property name");
             if (name == "None") return new NoneProperty();
 
-            UString type = reader.ReadUnrealString();
+            FString type = reader.ReadUnrealString() ?? throw new FormatException("Error reading property type");
             long size = reader.ReadInt64();
 
-            UProperty property = (UProperty)Activator.CreateInstance(ResolveType(type), overrideName ?? name, type);
+            UProperty property = (UProperty)Activator.CreateInstance(ResolveType(type), overrideName ?? name, type)!;
 
             property.Deserialize(reader, size, true);
             return property;
@@ -101,9 +111,11 @@ namespace UeSaveGame
             return size;
         }
 
-        public static Type ResolveType(UString typeName)
+        public static Type ResolveType(FString typeName)
         {
-            Type type;
+            if (typeName.Value == null) throw new ArgumentNullException(nameof(typeName));
+
+            Type? type;
             if (sTypeMap.TryGetValue(typeName.Value, out type))
             {
                 return type;
@@ -117,7 +129,7 @@ namespace UeSaveGame
             throw new NotImplementedException($"Property type {typeName} has not been implemented.");
         }
 
-        public UProperty Clone(UString overrideName = null)
+        public UProperty Clone(FString? overrideName = null)
         {
             using (MemoryStream stream = new MemoryStream())
             {
@@ -141,7 +153,7 @@ namespace UeSaveGame
             return hash;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is UProperty up && Name.Equals(up.Name) && Type.Equals(up.Type);
         }
@@ -154,14 +166,14 @@ namespace UeSaveGame
 
     public abstract class UProperty<T> : UProperty
     {
-        protected UProperty(UString name, UString type)
+        protected UProperty(FString name, FString type)
             : base(name, type)
         {
         }
 
-        public new T Value
+        public new T? Value
         {
-            get => (T)base.Value;
+            get => (T?)base.Value;
             set => base.Value = value;
         }
     }

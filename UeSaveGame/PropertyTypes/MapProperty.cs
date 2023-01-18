@@ -1,19 +1,29 @@
-﻿using UeSaveGame.Util;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using UeSaveGame.DataTypes;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-    public class MapProperty : UProperty<IList<KeyValuePair<UProperty, UProperty>>>
+	public class MapProperty : UProperty<IList<KeyValuePair<UProperty, UProperty>>>
     {
         private int mRemovedCount;
 
-        public UString KeyType { get; private set; }
-        public UString ValueType { get; private set; }
+        public FString? KeyType { get; private set; }
+        public FString? ValueType { get; private set; }
 
-        public MapProperty(UString name, UString type)
+        public MapProperty(FString name, FString type)
             : base(name, type)
         {
         }
@@ -27,6 +37,8 @@ namespace UeSaveGame.PropertyTypes
                 reader.ReadByte();
             }
 
+            if (KeyType == null || ValueType == null) throw new InvalidOperationException("Unknown map type cannot be read.");
+
             mRemovedCount = reader.ReadInt32();
             if (mRemovedCount != 0)
             {
@@ -39,17 +51,19 @@ namespace UeSaveGame.PropertyTypes
             Value = new List<KeyValuePair<UProperty, UProperty>>(count);
             for (int i = 0; i < count; ++i)
             {
-                UProperty key;
+                UProperty? key;
                 {
                     Type type = ResolveType(KeyType);
-                    key = (UProperty)Activator.CreateInstance(type, UString.Empty, KeyType);
+                    key = (UProperty?)Activator.CreateInstance(type, FString.Empty, KeyType);
+                    if (key == null) throw new FormatException("Error reading map key");
                     key.Deserialize(reader, 0, false);
                 }
 
-                UProperty value;
+                UProperty? value;
                 {
                     Type type = ResolveType(ValueType);
-                    value = (UProperty)Activator.CreateInstance(type, Name, ValueType);
+                    value = (UProperty?)Activator.CreateInstance(type, Name, ValueType);
+                    if (value == null) throw new FormatException("Error reading map value");
                     value.Deserialize(reader, 0, false);
                 }
                 Value.Add(new KeyValuePair<UProperty, UProperty>(key, value));
@@ -61,6 +75,8 @@ namespace UeSaveGame.PropertyTypes
 
         public override long Serialize(BinaryWriter writer, bool includeHeader)
         {
+            if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
+
             if (includeHeader)
             {
                 writer.WriteUnrealString(KeyType);

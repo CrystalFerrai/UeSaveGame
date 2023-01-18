@@ -1,19 +1,30 @@
-﻿using UeSaveGame.Util;
-using System;
-using System.IO;
-using UeSaveGame.DataTypes;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-    public class SetProperty : UProperty<UProperty[]>
+	public class SetProperty : UProperty<UProperty[]>
     {
-        private StructProperty mPrototype;
+        private StructProperty? mPrototype;
 
         private int mRemovedCount;
 
-        public UString ItemType { get; private set; }
+        public FString? ItemType { get; private set; }
 
-        public SetProperty(UString name, UString type)
+        public SetProperty(FString name, FString type)
             : base(name, type)
         {
         }
@@ -25,6 +36,8 @@ namespace UeSaveGame.PropertyTypes
                 ItemType = reader.ReadUnrealString();
                 reader.ReadByte();
             }
+
+            if (ItemType == null) throw new InvalidOperationException("Cannot read set with unknown item type");
 
             mRemovedCount = reader.ReadInt32();
             if (mRemovedCount != 0)
@@ -42,6 +55,8 @@ namespace UeSaveGame.PropertyTypes
 
         public override long Serialize(BinaryWriter writer, bool includeHeader)
         {
+            if (Value == null || mPrototype == null) throw new InvalidOperationException("Instance is not valid for serialization");
+
             if (includeHeader)
             {
                 writer.WriteUnrealString(ItemType);
