@@ -71,11 +71,13 @@ namespace UeSaveGame.Util
             return null;
         }
 
-        public static long Serialize(BinaryWriter writer, FString? itemType, bool includeHeader, StructProperty prototype, IReadOnlyList<UProperty> inData)
+        public static long Serialize(BinaryWriter writer, FString? itemType, bool includeHeader, StructProperty? prototype, IReadOnlyList<UProperty> inData)
         {
             long size = 0;
             if (itemType == "StructProperty")
             {
+                if (prototype == null) throw new InvalidOperationException("Instance is not valid for serialization");
+
                 // Standard UProperty header
                 writer.WriteUnrealString(prototype.Name);
                 writer.WriteUnrealString(prototype.Type);

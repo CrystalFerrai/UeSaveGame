@@ -46,7 +46,7 @@ namespace UeSaveGame.PropertyTypes
 
         public override long Serialize(BinaryWriter writer, bool includeHeader)
         {
-            if (Value == null || mPrototype == null) throw new InvalidOperationException("Instance is not valid for serialization");
+            if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
 
             if (includeHeader)
             {
