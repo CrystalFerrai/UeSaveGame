@@ -49,17 +49,17 @@ namespace UeSaveGame.DataTypes
             return mDateTime.ToString();
         }
 
-        public string ToString(string format)
+        public string ToString(string? format)
 		{
             return mDateTime.ToString(format);
         }
 
-        public string ToString(IFormatProvider provider)
+        public string ToString(IFormatProvider? provider)
         {
             return mDateTime.ToString(provider);
         }
 
-        public string ToString(string format, IFormatProvider provider)
+        public string ToString(string? format, IFormatProvider? provider)
         {
             return mDateTime.ToString(format, provider);
         }
