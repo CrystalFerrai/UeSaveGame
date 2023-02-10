@@ -1,13 +1,25 @@
-﻿using UeSaveGame.Util;
-using System.IO;
-using UeSaveGame.DataTypes;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using UeSaveGame.Util;
 
 namespace UeSaveGame.TextData
 {
-    public class TextData_StringTableEntry : ITextData
+	public class TextData_StringTableEntry : ITextData
     {
-        private UString mTable;
-        private UString mKey;
+        private FString? mTable;
+        private FString? mKey;
 
         public void Deserialize(BinaryReader reader, long size)
         {
@@ -17,6 +29,8 @@ namespace UeSaveGame.TextData
 
         public long Serialize(BinaryWriter writer)
         {
+            if (mTable == null || mKey == null) throw new InvalidOperationException("Instance is not valid for serialization");
+
             writer.WriteUnrealString(mTable);
             writer.WriteUnrealString(mKey);
 

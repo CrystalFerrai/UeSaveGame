@@ -8,7 +8,7 @@ There are no releases of this library at this time nor are any planned any time 
 
 ## How to Build
 
-The repo contains a Visual Studio 2019 solution and is configured to build using .NET Framework 4.8 and C# 7.3. There are no third party libraries in use. You should be able to just open the solution and build it. You will either want to import the project into your own solution or build it standalone and import the DLL into your own project.
+The repo contains a Visual Studio 2022 solution and is configured to build using .NET 6. There are no third party libraries in use. You should be able to just open the solution and build it. You will either want to import the project into your own solution or build it standalone and import the DLL into your own project.
 
 ## How to Use
 

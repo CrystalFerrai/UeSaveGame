@@ -1,19 +1,29 @@
-﻿using UeSaveGame.Util;
-using System;
-using System.IO;
-using UeSaveGame.DataTypes;
-using System.Linq;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using UeSaveGame.Util;
 
 namespace UeSaveGame.TextData
 {
-    public class TextData_None : ITextData
+	public class TextData_None : ITextData
     {
-        private UString[] mValues;
+        private FString?[]? mValues;
 
         public void Deserialize(BinaryReader reader, long size)
         {
             int count = reader.ReadInt32();
-            mValues = new UString[count];
+            mValues = new FString[count];
             for (int i = 0; i < count; ++i)
             {
                 mValues[i] = reader.ReadUnrealString();
@@ -22,12 +32,14 @@ namespace UeSaveGame.TextData
 
         public long Serialize(BinaryWriter writer)
         {
+            if (mValues == null) throw new InvalidOperationException("Instance is not valid for serialization");
+
             writer.Write(mValues.Length);
             long len = 4;
-            foreach (UString value in mValues)
+            foreach (FString? value in mValues)
             {
                 writer.WriteUnrealString(value);
-                len += 4 + value.SizeInBytes;
+                len += 4 + (value?.SizeInBytes ?? 0);
             }
 
             return len;
@@ -35,7 +47,7 @@ namespace UeSaveGame.TextData
 
         public override string ToString()
         {
-            return string.Join(",", mValues.Select(v => v.Value));
+            return mValues == null ? String.Empty : string.Join(",", mValues.Select(v => v?.Value));
         }
     }
 }

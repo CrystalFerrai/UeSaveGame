@@ -1,20 +1,29 @@
-﻿using UeSaveGame.StructData;
-using UeSaveGame.Util;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Reflection;
-using UeSaveGame.DataTypes;
+using UeSaveGame.StructData;
+using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-    public class StructProperty : UProperty<IStructData>
+	public class StructProperty : UProperty<IStructData>
     {
         private static readonly Dictionary<string, Type> sTypeMap;
         private static readonly Dictionary<string, Type> sNameMap;
 
-        public UString StructType { get; set; }
+        public FString? StructType { get; set; }
 
         public Guid StructGuid { get; set; }
 
@@ -23,12 +32,13 @@ namespace UeSaveGame.PropertyTypes
             sTypeMap = new Dictionary<string, Type>();
             sNameMap = new Dictionary<string, Type>();
 
+            // TODO: GlobalAssemblyCache is always false now. Find another way tro filter out assemblies we don't care about
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GlobalAssemblyCache == false))
             {
                 IEnumerable<Type> types = assembly.GetTypes().Where(t => !t.IsAbstract && t.GetInterfaces().Contains(typeof(IStructData)));
                 foreach (Type type in types)
                 {
-                    IStructData instance = (IStructData)Activator.CreateInstance(type);
+                    IStructData instance = (IStructData?)Activator.CreateInstance(type) ?? throw new MissingMethodException($"Could not construct an instance of struct data type {type.FullName}.");
                     foreach (string structType in instance.StructTypes)
                     {
                         sTypeMap.Add(structType, type);
@@ -44,7 +54,7 @@ namespace UeSaveGame.PropertyTypes
             }
         }
 
-        public StructProperty(UString name, UString type)
+        public StructProperty(FString name, FString type)
             : base(name, type)
         {
         }
@@ -62,11 +72,11 @@ namespace UeSaveGame.PropertyTypes
             if (size > 0 || StructType == null && !includeHeader)
             {
                 IStructData instance;
-                Type type;
-                if (StructType != null && sTypeMap.TryGetValue(StructType, out type) ||
-                    StructType == null && sNameMap.TryGetValue(Name, out type))
+                Type? type;
+                if (StructType != null && sTypeMap.TryGetValue(StructType!, out type) ||
+                    StructType == null && Name != null && sNameMap.TryGetValue(Name!, out type))
                 {
-                    instance = (IStructData)Activator.CreateInstance(type);
+                    instance = (IStructData?)Activator.CreateInstance(type) ?? throw new MissingMethodException($"Could not construct an instance of struct data type {type.FullName}.");
                 }
                 else
                 {

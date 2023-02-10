@@ -1,13 +1,27 @@
-﻿using System;
-using System.IO;
+﻿// Copyright 2022 Crystal Ferrai
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using System.Text;
-using UeSaveGame.DataTypes;
 
 namespace UeSaveGame.Util
 {
-    public static class BinaryIOExtensions
+    /// <summary>
+    /// Extension methods for reading/writing custom types using standard binary readers and writers
+    /// </summary>
+	public static class BinaryIOExtensions
     {
-        public static UString ReadUnrealString(this BinaryReader reader)
+        public static FString? ReadUnrealString(this BinaryReader reader)
         {
             var length = reader.ReadInt32();
             switch (length)
@@ -16,22 +30,22 @@ namespace UeSaveGame.Util
                     return null;
                 case 1:
                     reader.ReadByte();
-                    return UString.Empty;
+                    return FString.Empty;
                 default:
                     if (length < 0)
                     {
                         byte[] data = reader.ReadBytes(-length * 2);
-                        return new UString(Encoding.Unicode.GetString(data, 0, data.Length - 2), Encoding.Unicode);
+                        return new FString(Encoding.Unicode.GetString(data, 0, data.Length - 2), Encoding.Unicode);
                     }
                     else
                     {
                         byte[] data = reader.ReadBytes(length);
-                        return new UString(Encoding.ASCII.GetString(data, 0, data.Length - 1), Encoding.ASCII);
+                        return new FString(Encoding.ASCII.GetString(data, 0, data.Length - 1), Encoding.ASCII);
                     }
             }
         }
 
-        public static void WriteUnrealString(this BinaryWriter writer, UString value)
+        public static void WriteUnrealString(this BinaryWriter writer, FString? value)
         {
             if (value is null || value.Value is null)
             {
