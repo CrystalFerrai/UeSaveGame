@@ -18,7 +18,7 @@ namespace UeSaveGame.StructData
 {
 	public class DateTimeStruct : BaseStructData
     {
-        public UDateTime DateTime { get; set; }
+        public FDateTime DateTime { get; set; }
 
         public override IEnumerable<string> StructTypes
         {
@@ -30,7 +30,7 @@ namespace UeSaveGame.StructData
 
         public override void Deserialize(BinaryReader reader, long size)
         {
-            UDateTime dateTime = new UDateTime();
+            FDateTime dateTime = new FDateTime();
             dateTime.Ticks = reader.ReadInt64();
             DateTime = dateTime;
         }
