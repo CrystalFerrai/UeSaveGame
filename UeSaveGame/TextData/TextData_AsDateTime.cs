@@ -19,7 +19,7 @@ namespace UeSaveGame.TextData
 {
 	public class TextData_AsDateTime : ITextData
     {
-        public UDateTime DateTime { get; set; }
+        public FDateTime DateTime { get; set; }
 
         public DateTimeStyle DateStyle { get; set; }
 
@@ -31,7 +31,7 @@ namespace UeSaveGame.TextData
 
         public void Deserialize(BinaryReader reader, long size)
         {
-            UDateTime dateTime = new UDateTime();
+            FDateTime dateTime = new FDateTime();
             dateTime.Ticks = reader.ReadInt64();
             DateTime = dateTime;
 
