@@ -22,7 +22,11 @@ namespace UeSaveGame.PropertyTypes
 
         public FString? EnumType { get; private set; }
 
-        public ByteProperty(FString name, FString type)
+        public override bool IsSimpleProperty => true;
+
+        public override Type SimpleValueType => Value is FString ? typeof(FString) : typeof(byte);
+
+		public ByteProperty(FString name, FString type)
             : base(name, type)
         {
         }

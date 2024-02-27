@@ -21,12 +21,12 @@ namespace UeSaveGame.Util
     /// </summary>
 	internal static class ArraySerializationHelper
     {
-        public static StructProperty? Deserialize(BinaryReader reader, int count, long size, FString itemType, bool includeHeader, out UProperty[] outData)
+        public static StructProperty? Deserialize(BinaryReader reader, int count, long size, FString itemType, bool includeHeader, out Array outData)
         {
-            outData = new UProperty[count];
-
             if (itemType == "StructProperty")
             {
+				UProperty[] data = new UProperty[count];
+
                 // Standard UProperty header
                 FString name = reader.ReadUnrealString() ?? throw new FormatException("Error reading struct property");
                 FString type = reader.ReadUnrealString() ?? throw new FormatException("Error reading struct property");
@@ -50,28 +50,59 @@ namespace UeSaveGame.Util
                     sp.StructType = structItemType;
                     sp.StructGuid = guid;
                     sp.Deserialize(reader, dataSize, false);
-                    outData[i] = sp;
+                    data[i] = sp;
                 }
 
+                outData = data;
                 return new StructProperty(name, type) { StructType = structItemType, StructGuid = guid };
             }
-            else if (count > 0)
+            else
             {
-                // No standard UProperty header
-                Type type = UProperty.ResolveType(itemType);
-                long itemSize = size / count;
-                for (int i = 0; i < count; ++i)
+                Type propType = UProperty.ResolveType(itemType);
+                UProperty prototype = ((UProperty?)Activator.CreateInstance(propType, FString.Empty, itemType)) ?? throw new FormatException("Error reading array data");
+
+                if (prototype.IsSimpleProperty)
                 {
-                    // Data only for each item - no headers
-                    outData[i] = (UProperty?)Activator.CreateInstance(type, FString.Empty, itemType) ?? throw new FormatException("Error reading array data");
-                    outData[i]?.Deserialize(reader, itemSize, false);
+                    Array data = (Array?)Activator.CreateInstance(prototype.SimpleValueType.MakeArrayType(), count) ?? throw new FormatException("Error building array data");
+
+                    if (count > 0)
+                    {
+                        long itemSize = size / count;
+                        for (int i = 0; i < count; ++i)
+                        {
+                            // Data only for each item - no headers
+                            prototype.Deserialize(reader, itemSize, false);
+                            data.SetValue(prototype.Value, i);
+                        }
+                    }
+
+                    outData = data;
+                }
+                else
+				{
+                    UProperty[] data = new UProperty[count];
+
+                    if (count > 0)
+                    {
+                        // No standard UProperty header
+                        Type type = UProperty.ResolveType(itemType);
+                        long itemSize = size / count;
+                        for (int i = 0; i < count; ++i)
+                        {
+                            // Data only for each item - no headers
+                            data[i] = (UProperty?)Activator.CreateInstance(type, FString.Empty, itemType) ?? throw new FormatException("Error reading array data");
+                            data[i].Deserialize(reader, itemSize, false);
+                        }
+                    }
+
+                    outData = data;
                 }
             }
 
             return null;
         }
 
-        public static long Serialize(BinaryWriter writer, FString? itemType, bool includeHeader, StructProperty? prototype, IReadOnlyList<UProperty> inData)
+        public static long Serialize(BinaryWriter writer, FString itemType, bool includeHeader, StructProperty? prototype, Array inData)
         {
             long size = 0;
             if (itemType == "StructProperty")
@@ -98,7 +129,7 @@ namespace UeSaveGame.Util
                     size += 17;
                 }
 
-                if (inData.Count > 0)
+                if (inData.Length > 0)
                 {
                     long startPosition = writer.BaseStream.Position;
                     foreach (UProperty item in inData)
@@ -119,10 +150,24 @@ namespace UeSaveGame.Util
             }
             else
             {
-                foreach (UProperty item in inData)
+                Type propType = UProperty.ResolveType(itemType);
+                UProperty itemPrototype = ((UProperty?)Activator.CreateInstance(propType, FString.Empty, itemType)) ?? throw new FormatException("Error reading array data");
+
+                if (itemPrototype.IsSimpleProperty)
                 {
-                    // Data only for each item - no headers
-                    size += item.Serialize(writer, false);
+                    foreach (object item in inData)
+                    {
+                        itemPrototype.Value = item;
+                        size += itemPrototype.Serialize(writer, false);
+                    }
+                }
+                else
+				{
+                    foreach (UProperty item in inData)
+                    {
+                        // Data only for each item - no headers
+                        size += item.Serialize(writer, false);
+                    }
                 }
             }
             return size;

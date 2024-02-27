@@ -18,7 +18,7 @@ namespace UeSaveGame.StructData
 {
 	public class ColorStruct : BaseStructData
     {
-        public Color Value { get; set; }
+        public FColor Value { get; set; }
 
         public override IEnumerable<string> StructTypes
         {
@@ -30,7 +30,7 @@ namespace UeSaveGame.StructData
 
         public override void Deserialize(BinaryReader reader, long size)
         {
-            Color value = new Color();
+            FColor value = new FColor();
             value.R = reader.ReadByte();
             value.G = reader.ReadByte();
             value.B = reader.ReadByte();

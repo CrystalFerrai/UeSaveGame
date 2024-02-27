@@ -1,6 +1,6 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2023 Crystal Ferrai
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License";
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -12,18 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace UeSaveGame.DataTypes
+namespace UeSaveGame.PropertyTypes
 {
-    public struct FColor
-    {
-        public byte R;
-        public byte G;
-        public byte B;
-        public byte A;
-
-        public override string ToString()
-        {
-            return $"{R:x2}{G:x2}{B:x2}{A:x2}";
-        }
-    }
+	public class NameProperty : StrProperty
+	{
+		public NameProperty(FString name, FString type)
+			: base(name, type)
+		{
+		}
+	}
 }

@@ -20,6 +20,8 @@ namespace UeSaveGame.PropertyTypes
     {
         protected override long ContentSize => 0;
 
+        public override bool IsSimpleProperty => true;
+
         public NoneProperty()
             : base(new FString("None", Encoding.ASCII), new FString("None", Encoding.ASCII))
         {

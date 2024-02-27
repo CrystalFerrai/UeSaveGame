@@ -14,11 +14,20 @@
 
 namespace UeSaveGame.DataTypes
 {
-    public struct Vector
+    public struct FVector
     {
+        public static readonly FVector Zero;
+        public static readonly FVector One;
+
         public float X;
         public float Y;
         public float Z;
+
+        static FVector()
+        {
+            Zero = new() { X = 0.0f, Y = 0.0f, Z = 0.0f };
+            One = new() { X = 1.0f, Y = 1.0f, Z = 1.0f };
+        }
 
         public override string ToString()
         {

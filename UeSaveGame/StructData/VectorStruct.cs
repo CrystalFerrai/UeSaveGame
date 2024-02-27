@@ -27,7 +27,7 @@ namespace UeSaveGame.StructData
             }
         }
 
-        public Vector Value { get; set; }
+        public FVector Value { get; set; }
 
         public VectorStruct()
         {
@@ -35,7 +35,7 @@ namespace UeSaveGame.StructData
 
         public override void Deserialize(BinaryReader reader, long size)
         {
-            Vector v;
+            FVector v;
             v.X = reader.ReadSingle();
             v.Y = reader.ReadSingle();
             v.Z = reader.ReadSingle();

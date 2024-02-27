@@ -29,6 +29,8 @@ namespace UeSaveGame
 
         public static FString Empty { get; } = new FString(string.Empty, Encoding.ASCII, 0);
 
+        public static FString None { get; } = new FString("None", Encoding.ASCII, 0);
+
         public string Value { get; }
 
         public int Length => Value?.Length ?? 0;

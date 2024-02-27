@@ -14,15 +14,27 @@
 
 namespace UeSaveGame.DataTypes
 {
-	public class Transform
+	public class FTransform
     {
-        public Quaternion Rotation;
-        public Vector Translation;
-        public Vector Scale;
+        public static readonly FTransform Identity;
 
-        public static Transform Deserialize(BinaryReader reader)
+        public FQuat Rotation;
+        public FVector Translation;
+        public FVector Scale3D;
+
+        static FTransform()
         {
-            Transform t = new Transform();
+			Identity = new()
+			{
+				Rotation = FQuat.Identity,
+				Translation = FVector.Zero,
+				Scale3D = FVector.One
+			};
+		}
+
+        public static FTransform Deserialize(BinaryReader reader)
+        {
+            FTransform t = new();
 
             t.Rotation.X = reader.ReadSingle();
             t.Rotation.Y = reader.ReadSingle();
@@ -33,9 +45,9 @@ namespace UeSaveGame.DataTypes
             t.Translation.Y = reader.ReadSingle();
             t.Translation.Z = reader.ReadSingle();
 
-            t.Scale.X = reader.ReadSingle();
-            t.Scale.Y = reader.ReadSingle();
-            t.Scale.Z = reader.ReadSingle();
+            t.Scale3D.X = reader.ReadSingle();
+            t.Scale3D.Y = reader.ReadSingle();
+            t.Scale3D.Z = reader.ReadSingle();
 
             return t;
         }
@@ -51,16 +63,16 @@ namespace UeSaveGame.DataTypes
             writer.Write(Translation.Y);
             writer.Write(Translation.Z);
 
-            writer.Write(Scale.X);
-            writer.Write(Scale.Y);
-            writer.Write(Scale.Z);
+            writer.Write(Scale3D.X);
+            writer.Write(Scale3D.Y);
+            writer.Write(Scale3D.Z);
 
             return 40;
         }
 
         public override string ToString()
         {
-            return $"R({Rotation}) T({Translation}) S({Scale})";
+            return $"R({Rotation}) T({Translation}) S({Scale3D})";
         }
     }
 }

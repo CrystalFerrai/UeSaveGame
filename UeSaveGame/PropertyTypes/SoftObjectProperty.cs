@@ -20,7 +20,7 @@ namespace UeSaveGame.PropertyTypes
 	{
         public FString? AssetPath { get; private set; }
 
-        public int Unknown { get; private set; } // Maybe an index? Have only seen 0
+        public int Unknown { get; private set; } // Maybe an import/export index in the referenced asset? Have only seen 0
 
         protected override long ContentSize => (AssetPath?.SizeInBytes ?? 0) + 8;
 

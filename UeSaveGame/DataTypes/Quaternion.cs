@@ -14,12 +14,22 @@
 
 namespace UeSaveGame.DataTypes
 {
-    public struct Quaternion
+    public struct FQuat
     {
+        public static readonly FQuat Identity;
+
         public float X;
         public float Y;
         public float Z;
         public float W;
+
+        static FQuat()
+        {
+            Identity.X = 0.0f;
+            Identity.Y = 0.0f;
+            Identity.Z = 0.0f;
+            Identity.W = 1.0f;
+        }
 
         public override string ToString()
         {

@@ -32,7 +32,7 @@ namespace UeSaveGame.PropertyTypes
             sTypeMap = new Dictionary<string, Type>();
             sNameMap = new Dictionary<string, Type>();
 
-            // TODO: GlobalAssemblyCache is always false now. Find another way tro filter out assemblies we don't care about
+            // TODO: GlobalAssemblyCache is always false now. Find another way to filter out assemblies we don't care about
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GlobalAssemblyCache == false))
             {
                 IEnumerable<Type> types = assembly.GetTypes().Where(t => !t.IsAbstract && t.GetInterfaces().Contains(typeof(IStructData)));

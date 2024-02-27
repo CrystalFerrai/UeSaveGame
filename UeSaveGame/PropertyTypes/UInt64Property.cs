@@ -18,6 +18,8 @@ namespace UeSaveGame.PropertyTypes
     {
         protected override long ContentSize => 8;
 
+        public override bool IsSimpleProperty => true;
+
         public UInt64Property(FString name, FString type)
             : base(name, type)
         {

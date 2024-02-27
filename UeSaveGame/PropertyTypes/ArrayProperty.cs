@@ -16,7 +16,7 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class ArrayProperty : UProperty<UProperty[]>
+	public class ArrayProperty : UProperty<Array>
     {
         private StructProperty? mPrototype;
 
@@ -27,7 +27,13 @@ namespace UeSaveGame.PropertyTypes
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+		public ArrayProperty(FString name, FString type, FString itemType)
+			: this(name, type)
+		{
+            ItemType = itemType;
+		}
+
+		public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
         {
             if (includeHeader)
             {
@@ -39,7 +45,7 @@ namespace UeSaveGame.PropertyTypes
 
             int count = reader.ReadInt32();
 
-            UProperty[] data;
+            Array? data;
             mPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 4, ItemType, includeHeader, out data);
             Value = data;
         }
@@ -47,6 +53,7 @@ namespace UeSaveGame.PropertyTypes
         public override long Serialize(BinaryWriter writer, bool includeHeader)
         {
             if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
+            if (ItemType == null) throw new InvalidOperationException("Cannot serialize array with unknown item type");
 
             if (includeHeader)
             {
@@ -64,7 +71,7 @@ namespace UeSaveGame.PropertyTypes
 
         public override string ToString()
         {
-            string valueString = Value?.Length == 1 && Value[0] != null ? Value[0]!.ToString() : $"Count = {Value?.Length ?? 0}";
+            string? valueString = Value?.Length == 1 && Value.GetValue(0) != null ? Value.GetValue(0)!.ToString() : $"Count = {Value?.Length ?? 0}";
             return Value == null ? base.ToString() : $"{Name} [{nameof(ArrayProperty)}<{ItemType}>] {valueString}";
         }
     }

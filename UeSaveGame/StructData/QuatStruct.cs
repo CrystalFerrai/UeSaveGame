@@ -26,7 +26,7 @@ namespace UeSaveGame.StructData
             }
         }
 
-        public Quaternion Value { get; set; }
+        public FQuat Value { get; set; }
 
         public QuatStruct()
         {
@@ -34,7 +34,7 @@ namespace UeSaveGame.StructData
 
         public override void Deserialize(BinaryReader reader, long size)
         {
-            Quaternion q;
+            FQuat q;
             q.X = reader.ReadSingle();
             q.Y = reader.ReadSingle();
             q.Z = reader.ReadSingle();

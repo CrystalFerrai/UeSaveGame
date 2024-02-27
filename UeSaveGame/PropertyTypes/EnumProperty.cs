@@ -22,9 +22,17 @@ namespace UeSaveGame.PropertyTypes
 
         public FString? EnumType { get; private set; }
 
+        public override bool IsSimpleProperty => true;
+
         public EnumProperty(FString name, FString type)
             : base(name, type)
         {
+        }
+
+        public EnumProperty(FString name, FString type, FString? enumType)
+            : this(name, type)
+        {
+            EnumType = enumType;
         }
 
         public override void Deserialize(BinaryReader reader, long size, bool includeHeader)

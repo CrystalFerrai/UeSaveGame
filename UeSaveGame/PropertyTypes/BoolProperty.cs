@@ -18,7 +18,9 @@ namespace UeSaveGame.PropertyTypes
     {
         protected override long ContentSize => 0; // Size is technically 2, but 0 is always written
 
-        public BoolProperty(FString name, FString type)
+        public override bool IsSimpleProperty => true;
+
+		public BoolProperty(FString name, FString type)
             : base(name, type)
         {
         }

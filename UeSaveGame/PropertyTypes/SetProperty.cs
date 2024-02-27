@@ -16,7 +16,7 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class SetProperty : UProperty<UProperty[]>
+	public class SetProperty : UProperty<Array>
     {
         private StructProperty? mPrototype;
 
@@ -48,7 +48,7 @@ namespace UeSaveGame.PropertyTypes
 
             int count = reader.ReadInt32();
 
-            UProperty[] data;
+            Array? data;
             mPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 8, ItemType, includeHeader, out data);
             Value = data;
         }
@@ -56,6 +56,7 @@ namespace UeSaveGame.PropertyTypes
         public override long Serialize(BinaryWriter writer, bool includeHeader)
         {
             if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
+            if (ItemType == null) throw new InvalidOperationException("Cannot serialize set with unknown item type");
 
             if (includeHeader)
             {

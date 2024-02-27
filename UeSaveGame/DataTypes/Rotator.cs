@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2023 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,22 @@
 
 namespace UeSaveGame.DataTypes
 {
-    public struct FColor
-    {
-        public byte R;
-        public byte G;
-        public byte B;
-        public byte A;
+	public struct FRotator
+	{
+		public static readonly FRotator Zero;
 
-        public override string ToString()
-        {
-            return $"{R:x2}{G:x2}{B:x2}{A:x2}";
-        }
-    }
+		public float X;
+		public float Y;
+		public float Z;
+
+		static FRotator()
+		{
+			Zero = new() { X = 0.0f, Y = 0.0f, Z = 0.0f };
+		}
+
+		public override string ToString()
+		{
+			return $"{X} {Y} {Z}";
+		}
+	}
 }

@@ -14,14 +14,14 @@
 
 namespace UeSaveGame.DataTypes
 {
-	public class Sphere
+	public class FSphere
     {
-        public Vector Center;
+        public FVector Center;
         public float Radius;
 
-        public static Sphere Deserialize(BinaryReader reader)
+        public static FSphere Deserialize(BinaryReader reader)
         {
-            Sphere m = new Sphere();
+            FSphere m = new();
 
             m.Center.X = reader.ReadSingle();
             m.Center.Y = reader.ReadSingle();

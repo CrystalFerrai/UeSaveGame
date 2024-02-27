@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using UeSaveGame.DataTypes;
+
 namespace UeSaveGame.StructData
 {
 	public class IntPointStruct : BaseStructData
     {
-        IntPoint Value { get; set; }
+        FIntPoint Value { get; set; }
 
         public override IEnumerable<string> StructTypes
         {
@@ -28,7 +30,7 @@ namespace UeSaveGame.StructData
 
         public override void Deserialize(BinaryReader reader, long size)
         {
-            IntPoint value = new IntPoint();
+            FIntPoint value = new();
             value.X = reader.ReadInt32();
             value.Y = reader.ReadInt32();
             Value = value;
@@ -45,17 +47,6 @@ namespace UeSaveGame.StructData
         public override string ToString()
         {
             return Value.ToString();
-        }
-    }
-
-    public struct IntPoint
-    {
-        public int X;
-        public int Y;
-
-        public override string ToString()
-        {
-            return $"{X},{Y}";
         }
     }
 }
