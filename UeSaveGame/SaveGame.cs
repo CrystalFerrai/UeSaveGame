@@ -22,7 +22,7 @@ namespace UeSaveGame
     /// </summary>
 	public class SaveGame
     {
-        private static readonly byte[] sHeader = Encoding.ASCII.GetBytes("GVAS");
+        private static readonly uint sMagic = 0x53415647; // SAVG
 
         internal SaveGameHeader Header { get; private set; }
         internal CustomFormatData CustomFormats { get; private set; }
@@ -51,13 +51,11 @@ namespace UeSaveGame
         {
             SaveGame instance = new SaveGame();
 
-            byte[] id = new byte[sHeader.Length];
-            stream.Read(id, 0, sHeader.Length);
-
             using (var reader = new BinaryReader(stream, Encoding.ASCII, true))
             {
+                if (reader.ReadUInt32() != sMagic) throw new InvalidDataException("Save game header is missing or invalid.");
+
                 instance.Header = SaveGameHeader.Deserialize(reader);
-                if (instance.Header.SaveGameVersion != 2) throw new NotSupportedException($"Save game version {instance.Header.SaveGameVersion} cannot be read. Only version 2 is supported at this time");
 
                 instance.CustomFormats = CustomFormatData.Deserialize(reader);
 
@@ -77,10 +75,10 @@ namespace UeSaveGame
         /// <param name="stream">The stream to write to</param>
         public void WriteTo(Stream stream)
         {
-            stream.Write(sHeader, 0, sHeader.Length);
-
             using (BinaryWriter writer = new BinaryWriter(stream, Encoding.ASCII, true))
             {
+                writer.Write(sMagic);
+
                 Header.Serialize(writer);
                 CustomFormats.Serialize(writer);
                 writer.WriteUnrealString(SaveClass!);
@@ -95,18 +93,37 @@ namespace UeSaveGame
         }
     }
 
+    /// <summary>
+    /// Block of version information from the file header
+    /// </summary>
     internal struct SaveGameHeader
     {
-        public int SaveGameVersion;
-        public int PackageVersion;
+        public SaveGameFileVersion SaveGameVersion;
+        public int PackageVersionUE4;
+        public int PackageVersionUE5;
         public EngineVersion EngineVersion;
 
         public static SaveGameHeader Deserialize(BinaryReader reader)
         {
-            SaveGameHeader instance = new SaveGameHeader();
+            SaveGameHeader instance = new();
 
-            instance.SaveGameVersion = reader.ReadInt32();
-            instance.PackageVersion = reader.ReadInt32();
+            instance.SaveGameVersion = (SaveGameFileVersion)reader.ReadInt32();
+            if (instance.SaveGameVersion != SaveGameFileVersion.AddedCustomVersions && instance.SaveGameVersion != SaveGameFileVersion.PackageFileSummaryVersionChange)
+            {
+                throw new NotSupportedException($"Save game version {(int)instance.SaveGameVersion} is not supported at this time");
+            }
+
+            instance.PackageVersionUE4 = reader.ReadInt32();
+
+            if (instance.SaveGameVersion == SaveGameFileVersion.PackageFileSummaryVersionChange)
+            {
+                instance.PackageVersionUE5 = reader.ReadInt32();
+            }
+            else
+			{
+                instance.PackageVersionUE5 = 0;
+			}
+
             instance.EngineVersion = EngineVersion.Deserialize(reader);
 
             return instance;
@@ -114,16 +131,30 @@ namespace UeSaveGame
 
         public void Serialize(BinaryWriter writer)
         {
-            writer.Write(SaveGameVersion);
-            writer.Write(PackageVersion);
-            EngineVersion.Serialize(writer);
+            writer.Write((int)SaveGameVersion);
+            writer.Write(PackageVersionUE4);
+            if (SaveGameVersion == SaveGameFileVersion.PackageFileSummaryVersionChange)
+            {
+                writer.Write(PackageVersionUE5);
+            }
+			EngineVersion.Serialize(writer);
         }
     }
 
     /// <summary>
-    /// Represents a version of the engine
+    /// Overall save file format version
     /// </summary>
-    internal struct EngineVersion
+    internal enum SaveGameFileVersion
+    {
+		InitialVersion = 1,
+		AddedCustomVersions = 2,
+		PackageFileSummaryVersionChange = 3
+	}
+
+	/// <summary>
+	/// Represents a version of the engine
+	/// </summary>
+	internal struct EngineVersion
     {
         public short Major;
         public short Minor;
