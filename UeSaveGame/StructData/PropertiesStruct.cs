@@ -33,16 +33,16 @@ namespace UeSaveGame.StructData
             Properties = new List<UProperty>();
         }
 
-        public override void Deserialize(BinaryReader reader, long size)
+        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
         {
-            Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, false));
+            Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, engineVersion, false));
         }
 
-        public override long Serialize(BinaryWriter writer)
+        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
         {
             long startPosition = writer.BaseStream.Position;
 
-            PropertySerializationHelper.WriteProperties(Properties, writer, false);
+            PropertySerializationHelper.WriteProperties(Properties, writer, engineVersion, false);
 
             return writer.BaseStream.Position - startPosition;
         }

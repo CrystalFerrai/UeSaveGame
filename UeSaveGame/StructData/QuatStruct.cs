@@ -18,6 +18,8 @@ namespace UeSaveGame.StructData
 {
 	public class QuatStruct : BaseStructData
     {
+        private bool mSerializeAsSingles;
+
         public override IEnumerable<string> StructTypes
         {
             get
@@ -28,28 +30,62 @@ namespace UeSaveGame.StructData
 
         public FQuat Value { get; set; }
 
-        public QuatStruct()
+		public QuatStruct()
         {
+            mSerializeAsSingles = true;
         }
 
-        public override void Deserialize(BinaryReader reader, long size)
+		public QuatStruct(bool serializeAsSingles)
+        {
+            mSerializeAsSingles = serializeAsSingles;
+        }
+
+        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
         {
             FQuat q;
-            q.X = reader.ReadSingle();
-            q.Y = reader.ReadSingle();
-            q.Z = reader.ReadSingle();
-            q.W = reader.ReadSingle();
+
+            switch (size)
+            {
+                case 0:
+                case 16:
+                    mSerializeAsSingles = true;
+					q.X = reader.ReadSingle();
+					q.Y = reader.ReadSingle();
+					q.Z = reader.ReadSingle();
+					q.W = reader.ReadSingle();
+					break;
+                case 32:
+					mSerializeAsSingles = false;
+					q.X = reader.ReadDouble();
+					q.Y = reader.ReadDouble();
+					q.Z = reader.ReadDouble();
+					q.W = reader.ReadDouble();
+					break;
+                default:
+                    throw new NotImplementedException($"QuatStruct: Unknown struct size {size}");
+            }
+
             Value = q;
         }
 
-        public override long Serialize(BinaryWriter writer)
+        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
         {
-            writer.Write(Value.X);
-            writer.Write(Value.Y);
-            writer.Write(Value.Z);
-            writer.Write(Value.W);
+            if (mSerializeAsSingles)
+            {
+                writer.Write((float)Value.X);
+                writer.Write((float)Value.Y);
+                writer.Write((float)Value.Z);
+                writer.Write((float)Value.W);
 
-            return 16;
+				return 16;
+			}
+
+			writer.Write(Value.X);
+			writer.Write(Value.Y);
+			writer.Write(Value.Z);
+			writer.Write(Value.W);
+
+            return 32;
         }
 
         public override string ToString()

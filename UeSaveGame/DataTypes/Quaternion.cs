@@ -18,17 +18,17 @@ namespace UeSaveGame.DataTypes
     {
         public static readonly FQuat Identity;
 
-        public float X;
-        public float Y;
-        public float Z;
-        public float W;
+        public double X;
+        public double Y;
+        public double Z;
+        public double W;
 
         static FQuat()
         {
-            Identity.X = 0.0f;
-            Identity.Y = 0.0f;
-            Identity.Z = 0.0f;
-            Identity.W = 1.0f;
+            Identity.X = 0.0;
+            Identity.Y = 0.0;
+            Identity.Z = 0.0;
+            Identity.W = 1.0;
         }
 
         public override string ToString()

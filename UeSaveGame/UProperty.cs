@@ -18,9 +18,9 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame
 {
-    /// <summary>
-    /// Represents an Unreal UProperty with a name, type and value
-    /// </summary>
+	/// <summary>
+	/// Represents an Unreal UProperty with a name, type and value
+	/// </summary>
 	public abstract class UProperty
     {
         // Map of type names to propery types
@@ -115,23 +115,26 @@ namespace UeSaveGame
         /// <param name="reader">Reader to read data from</param>
         /// <param name="size">The size of the property (from the propery metadata)</param>
         /// <param name="includeHeader">Whether the serialzied property value includes a header</param>
-        public abstract void Deserialize(BinaryReader reader, long size, bool includeHeader);
+        /// <param name="engineVersion">The version of Unreal Engine that was used to serialize this property</param>
+        public abstract void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion);
 
         /// <summary>
         /// Serialize this property's data
         /// </summary>
         /// <param name="writer">Writer to write data to</param>
         /// <param name="includeHeader">Whether to write a value header</param>
+        /// <param name="engineVersion">The version of Unreal Engine to serialize this property for</param>
         /// <returns>The size of the serialized data</returns>
-        public abstract long Serialize(BinaryWriter writer, bool includeHeader);
+        public abstract long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion);
 
-        /// <summary>
-        /// Deserializes a new property
-        /// </summary>
-        /// <param name="reader">The reader to read the property from</param>
-        /// <param name="overrideName">If specified, overrides the name of the new property</param>
-        /// <returns>The deserialized property</returns>
-        public static UProperty Deserialize(BinaryReader reader, FString? overrideName = null)
+		/// <summary>
+		/// Deserializes a new property
+		/// </summary>
+		/// <param name="reader">The reader to read the property from</param>
+		/// <param name="engineVersion">The version of Unreal Engine that was used to serialize this property</param>
+		/// <param name="overrideName">If specified, overrides the name of the new property</param>
+		/// <returns>The deserialized property</returns>
+		public static UProperty Deserialize(BinaryReader reader, EngineVersion engineVersion, FString? overrideName = null)
         {
             FString name = reader.ReadUnrealString() ?? throw new FormatException("Error reading property name");
             if (name == "None") return new NoneProperty();
@@ -141,27 +144,28 @@ namespace UeSaveGame
 
             UProperty property = (UProperty)Activator.CreateInstance(ResolveType(type), overrideName ?? name, type)!;
 
-            property.Deserialize(reader, size, true);
+            property.Deserialize(reader, size, true, engineVersion);
             return property;
         }
 
-        /// <summary>
-        /// Serialize this property
-        /// </summary>
-        /// <param name="writer">The writer to write the proiperty to</param>
-        /// <returns>The size of this property's data, not including metadata</returns>
-        public long Serialize(BinaryWriter writer)
+		/// <summary>
+		/// Serialize this property
+		/// </summary>
+		/// <param name="writer">The writer to write the proiperty to</param>
+		/// <param name="engineVersion">The version of Unreal Engine to serialize this property for</param>
+		/// <returns>The size of this property's data, not including metadata</returns>
+		public long Serialize(BinaryWriter writer, EngineVersion engineVersion)
         {
             long size = ContentSize;
 
             writer.WriteUnrealString(Name);
             writer.WriteUnrealString(Type);
 
-            if (ContentSize >= 0)
+			if (ContentSize >= 0)
             {
                 // Optimized path for types that know their size upfront
                 writer.Write(ContentSize);
-                Serialize(writer, true);
+                Serialize(writer, true, engineVersion);
             }
             else
             {
@@ -169,7 +173,7 @@ namespace UeSaveGame
                 long sizePosition = writer.BaseStream.Position;
                 writer.Write((long)0);
                 
-                size = Serialize(writer, true);
+                size = Serialize(writer, true, engineVersion);
                 long returnPosition = writer.BaseStream.Position;
 
                 writer.BaseStream.Seek(sizePosition, SeekOrigin.Begin);
@@ -211,27 +215,24 @@ namespace UeSaveGame
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                using (BinaryWriter writer = new BinaryWriter(stream, Encoding.ASCII, true))
+                using (BinaryWriter writer = new(stream, Encoding.ASCII, true))
                 {
-                    Serialize(writer);
+                    Serialize(writer, EngineVersion.LatestTested);
                 }
                 stream.Seek(0, SeekOrigin.Begin);
-                using (BinaryReader reader = new BinaryReader(stream, Encoding.ASCII, true))
+                using (BinaryReader reader = new(stream, Encoding.ASCII, true))
                 {
-                    return Deserialize(reader, overrideName);
+                    return Deserialize(reader, EngineVersion.LatestTested, overrideName);
                 }
             }
         }
 
         public override int GetHashCode()
-        {
-            int hash = 17;
-            hash = hash * 23 + Name.GetHashCode();
-            hash = hash * 23 + Type.GetHashCode();
-            return hash;
-        }
+		{
+			return HashCode.Combine(Name, Type);
+		}
 
-        public override bool Equals(object? obj)
+		public override bool Equals(object? obj)
         {
             return obj is UProperty up && Name.Equals(up.Name) && Type.Equals(up.Type);
         }

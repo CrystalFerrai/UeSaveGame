@@ -30,7 +30,7 @@ namespace UeSaveGame.StructData
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size)
+        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
         {
             LinearColor c;
             c.R = reader.ReadSingle();
@@ -40,7 +40,7 @@ namespace UeSaveGame.StructData
             Value = c;
         }
 
-        public override long Serialize(BinaryWriter writer)
+        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
         {
             writer.Write(Value.R);
             writer.Write(Value.G);

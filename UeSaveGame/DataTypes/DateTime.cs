@@ -43,7 +43,7 @@ namespace UeSaveGame.DataTypes
 
         public override string ToString()
         {
-            return Ticks.ToString();
+            return mValue.ToString();
         }
 
         public string ToString(string? format)

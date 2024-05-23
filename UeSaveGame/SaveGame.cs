@@ -49,7 +49,7 @@ namespace UeSaveGame
         /// <exception cref="FormatException">A problem occurred trying to parse the save game</exception>
         public static SaveGame LoadFrom(Stream stream)
         {
-            SaveGame instance = new SaveGame();
+            SaveGame instance = new();
 
             using (var reader = new BinaryReader(stream, Encoding.ASCII, true))
             {
@@ -61,7 +61,7 @@ namespace UeSaveGame
 
                 instance.SaveClass = reader.ReadUnrealString();
 
-                instance.Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, true));
+                instance.Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, instance.Header.EngineVersion, true));
 
                 if (reader.BaseStream.Position != reader.BaseStream.Length) throw new FormatException("Did not reach the end of the file when reading.");
             }
@@ -83,7 +83,7 @@ namespace UeSaveGame
                 CustomFormats.Serialize(writer);
                 writer.WriteUnrealString(SaveClass!);
 
-                PropertySerializationHelper.WriteProperties(Properties!, writer, true);
+                PropertySerializationHelper.WriteProperties(Properties!, writer, Header.EngineVersion, true);
             }
         }
 
@@ -150,45 +150,6 @@ namespace UeSaveGame
 		AddedCustomVersions = 2,
 		PackageFileSummaryVersionChange = 3
 	}
-
-	/// <summary>
-	/// Represents a version of the engine
-	/// </summary>
-	internal struct EngineVersion
-    {
-        public short Major;
-        public short Minor;
-        public short Patch;
-        public int Build;
-        public FString BuildId;
-
-        public static EngineVersion Deserialize(BinaryReader reader)
-        {
-            EngineVersion version = new EngineVersion();
-
-            version.Major = reader.ReadInt16();
-            version.Minor = reader.ReadInt16();
-            version.Patch = reader.ReadInt16();
-            version.Build = reader.ReadInt32();
-            version.BuildId = reader.ReadUnrealString()!;
-
-            return version;
-        }
-
-        public void Serialize(BinaryWriter writer)
-        {
-            writer.Write(Major);
-            writer.Write(Minor);
-            writer.Write(Patch);
-            writer.Write(Build);
-            writer.WriteUnrealString(BuildId);
-        }
-
-        public override string ToString()
-        {
-            return $"{Major}.{Minor}.{Patch}.{Build}";
-        }
-    }
 
     /// <summary>
     /// List of system versions in use while saving

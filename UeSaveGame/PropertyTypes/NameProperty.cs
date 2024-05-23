@@ -16,6 +16,11 @@ namespace UeSaveGame.PropertyTypes
 {
 	public class NameProperty : StrProperty
 	{
+		public NameProperty(FString name)
+			: this(name, new(nameof(NameProperty)))
+		{
+		}
+
 		public NameProperty(FString name, FString type)
 			: base(name, type)
 		{

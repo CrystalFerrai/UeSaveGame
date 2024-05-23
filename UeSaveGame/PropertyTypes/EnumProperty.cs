@@ -24,6 +24,11 @@ namespace UeSaveGame.PropertyTypes
 
         public override bool IsSimpleProperty => true;
 
+        public EnumProperty(FString name)
+            : this(name, new(nameof(EnumProperty)))
+        {
+        }
+
         public EnumProperty(FString name, FString type)
             : base(name, type)
         {
@@ -35,7 +40,7 @@ namespace UeSaveGame.PropertyTypes
             EnumType = enumType;
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader)
             {
@@ -51,7 +56,7 @@ namespace UeSaveGame.PropertyTypes
             }
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
 

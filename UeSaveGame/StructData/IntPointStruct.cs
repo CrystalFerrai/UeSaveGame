@@ -28,7 +28,7 @@ namespace UeSaveGame.StructData
             }
         }
 
-        public override void Deserialize(BinaryReader reader, long size)
+        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
         {
             FIntPoint value = new();
             value.X = reader.ReadInt32();
@@ -36,7 +36,7 @@ namespace UeSaveGame.StructData
             Value = value;
         }
 
-        public override long Serialize(BinaryWriter writer)
+        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
         {
             writer.Write(Value.X);
             writer.Write(Value.Y);

@@ -19,14 +19,14 @@ namespace UeSaveGame.DataTypes
         public static readonly FVector Zero;
         public static readonly FVector One;
 
-        public float X;
-        public float Y;
-        public float Z;
+        public double X;
+        public double Y;
+        public double Z;
 
         static FVector()
         {
-            Zero = new() { X = 0.0f, Y = 0.0f, Z = 0.0f };
-            One = new() { X = 1.0f, Y = 1.0f, Z = 1.0f };
+            Zero = new() { X = 0.0, Y = 0.0, Z = 0.0 };
+            One = new() { X = 1.0, Y = 1.0, Z = 1.0 };
         }
 
         public override string ToString()

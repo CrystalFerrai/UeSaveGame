@@ -28,14 +28,14 @@ namespace UeSaveGame.StructData
             }
         }
 
-        public override void Deserialize(BinaryReader reader, long size)
+        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
         {
             FDateTime dateTime = new FDateTime();
             dateTime.Ticks = reader.ReadInt64();
             DateTime = dateTime;
         }
 
-        public override long Serialize(BinaryWriter writer)
+        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
         {
             writer.Write(DateTime.Ticks);
 

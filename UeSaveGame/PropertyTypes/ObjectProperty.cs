@@ -22,19 +22,24 @@ namespace UeSaveGame.PropertyTypes
 
         public FString? ObjectType { get; private set; }
 
-        public ObjectProperty(FString name, FString type)
+		public ObjectProperty(FString name)
+			: this(name, new(nameof(ObjectProperty)))
+		{
+		}
+
+		public ObjectProperty(FString name, FString type)
             : base(name, type)
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) reader.ReadByte();
 
             ObjectType = reader.ReadUnrealString();
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) writer.Write((byte)0);
 

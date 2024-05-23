@@ -20,13 +20,18 @@ namespace UeSaveGame.PropertyTypes
 	// If the type is ever found elsewhere, we should check if the format is the same.
 
 	public class MulticastDelegateProperty : UProperty<UDelegate[]>
-    {
-        public MulticastDelegateProperty(FString name, FString type)
+	{
+		public MulticastDelegateProperty(FString name)
+			: this(name, new(nameof(MulticastDelegateProperty)))
+		{
+		}
+
+		public MulticastDelegateProperty(FString name, FString type)
             : base(name, type)
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader)
             {
@@ -43,7 +48,7 @@ namespace UeSaveGame.PropertyTypes
             }
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
 

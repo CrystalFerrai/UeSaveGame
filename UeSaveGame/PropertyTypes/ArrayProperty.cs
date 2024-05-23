@@ -22,6 +22,11 @@ namespace UeSaveGame.PropertyTypes
 
         public FString? ItemType { get; private set; }
 
+        public ArrayProperty(FString name)
+            : this(name, new(nameof(ArrayProperty)))
+        {
+        }
+
         public ArrayProperty(FString name, FString type)
             : base(name, type)
         {
@@ -33,7 +38,7 @@ namespace UeSaveGame.PropertyTypes
             ItemType = itemType;
 		}
 
-		public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+		public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader)
             {
@@ -46,11 +51,11 @@ namespace UeSaveGame.PropertyTypes
             int count = reader.ReadInt32();
 
             Array? data;
-            mPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 4, ItemType, includeHeader, out data);
+            mPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 4, ItemType, engineVersion, includeHeader, out data);
             Value = data;
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
             if (ItemType == null) throw new InvalidOperationException("Cannot serialize array with unknown item type");
@@ -64,7 +69,7 @@ namespace UeSaveGame.PropertyTypes
             long size = 4;
             writer.Write(Value.Length);
 
-            size += ArraySerializationHelper.Serialize(writer, ItemType, includeHeader, mPrototype, Value);
+            size += ArraySerializationHelper.Serialize(writer, ItemType, engineVersion, includeHeader, mPrototype, Value);
 
             return size;
         }

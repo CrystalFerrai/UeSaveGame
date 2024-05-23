@@ -20,8 +20,8 @@ namespace UeSaveGame
 
         public abstract IEnumerable<string> StructTypes { get; }
 
-        public abstract void Deserialize(BinaryReader reader, long size);
+        public abstract void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion);
 
-        public abstract long Serialize(BinaryWriter writer);
+        public abstract long Serialize(BinaryWriter writer, EngineVersion engineVersion);
     }
 }

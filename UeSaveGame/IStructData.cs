@@ -17,11 +17,15 @@ namespace UeSaveGame
     /// <summary>
     /// Interface for data types usable in UE structs
     /// </summary>
-	public interface IStructData : IBinarySerializable
+	public interface IStructData
     {
         IEnumerable<string> StructTypes { get; }
 
         // Only needed for cases where type name is not saved for a custom struct type (due to being in a map or something)
         ISet<string>? KnownPropertyNames { get; }
-    }
+
+		void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion);
+
+		long Serialize(BinaryWriter writer, EngineVersion engineVersion);
+	}
 }

@@ -22,18 +22,23 @@ namespace UeSaveGame.PropertyTypes
 
         public override bool IsSimpleProperty => true;
 
-        public StrProperty(FString name, FString type)
+		public StrProperty(FString name)
+			: this(name, new(nameof(StrProperty)))
+		{
+		}
+
+		public StrProperty(FString name, FString type)
             : base(name, type)
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) reader.ReadByte();
             Value = reader.ReadUnrealString();
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) writer.Write((byte)0);
             writer.WriteUnrealString(Value);

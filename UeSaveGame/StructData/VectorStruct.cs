@@ -17,8 +17,10 @@ using UeSaveGame.DataTypes;
 namespace UeSaveGame.StructData
 {
 	public class VectorStruct : BaseStructData
-    {
-        public override IEnumerable<string> StructTypes
+	{
+		private bool mSerializeAsSingles;
+
+		public override IEnumerable<string> StructTypes
         {
             get
             {
@@ -29,26 +31,58 @@ namespace UeSaveGame.StructData
 
         public FVector Value { get; set; }
 
-        public VectorStruct()
-        {
-        }
+		public VectorStruct()
+		{
+			mSerializeAsSingles = true;
+		}
 
-        public override void Deserialize(BinaryReader reader, long size)
+        public VectorStruct(bool serializeAsSingles)
+		{
+			mSerializeAsSingles = serializeAsSingles;
+		}
+
+        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
         {
             FVector v;
-            v.X = reader.ReadSingle();
-            v.Y = reader.ReadSingle();
-            v.Z = reader.ReadSingle();
+
+			switch (size)
+			{
+				case 0:
+				case 12:
+					mSerializeAsSingles = true;
+					v.X = reader.ReadSingle();
+					v.Y = reader.ReadSingle();
+					v.Z = reader.ReadSingle();
+					break;
+				case 24:
+					mSerializeAsSingles = false;
+					v.X = reader.ReadDouble();
+					v.Y = reader.ReadDouble();
+					v.Z = reader.ReadDouble();
+					break;
+				default:
+					throw new NotImplementedException($"QuatStruct: Unknown struct size {size}");
+			}
+
             Value = v;
         }
 
-        public override long Serialize(BinaryWriter writer)
-        {
-            writer.Write(Value.X);
-            writer.Write(Value.Y);
-            writer.Write(Value.Z);
+        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
+		{
+			if (mSerializeAsSingles)
+			{
+				writer.Write((float)Value.X);
+				writer.Write((float)Value.Y);
+				writer.Write((float)Value.Z);
 
-            return 12;
+				return 12;
+			}
+
+			writer.Write(Value.X);
+			writer.Write(Value.Y);
+			writer.Write(Value.Z);
+
+            return 24;
         }
 
         public override string ToString()

@@ -34,12 +34,17 @@ namespace UeSaveGame.PropertyTypes
             };
         }
 
-        public TextProperty(FString name, FString type)
+		public TextProperty(FString name)
+			: this(name, new(nameof(TextProperty)))
+		{
+		}
+
+		public TextProperty(FString name, FString type)
             : base(name, type)
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) reader.ReadByte();
 
@@ -56,7 +61,7 @@ namespace UeSaveGame.PropertyTypes
             Value?.Deserialize(reader, size - (includeHeader ? 6 : 5));
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) writer.Write((byte)0);
 

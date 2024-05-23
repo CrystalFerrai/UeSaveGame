@@ -30,12 +30,12 @@ namespace UeSaveGame.StructData
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size)
+        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
         {
             Value = new Guid(reader.ReadBytes(16));
         }
 
-        public override long Serialize(BinaryWriter writer)
+        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
         {
             writer.Write(Value.ToByteArray());
 

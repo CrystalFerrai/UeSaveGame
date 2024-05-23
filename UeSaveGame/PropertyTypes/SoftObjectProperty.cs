@@ -12,39 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using UeSaveGame.Util;
+using UeSaveGame.DataTypes;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class SoftObjectProperty : UProperty
+	public class SoftObjectProperty : UProperty<SoftObjectPath>
 	{
-        public FString? AssetPath { get; private set; }
+		public SoftObjectProperty(FString name)
+			: this(name, new(nameof(SoftObjectProperty)))
+		{
+		}
 
-        public int Unknown { get; private set; } // Maybe an import/export index in the referenced asset? Have only seen 0
-
-        protected override long ContentSize => (AssetPath?.SizeInBytes ?? 0) + 8;
-
-        public SoftObjectProperty(FString name, FString type)
+		public SoftObjectProperty(FString name, FString type)
             : base(name, type)
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) reader.ReadByte();
 
-            AssetPath = reader.ReadUnrealString();
-            Unknown = reader.ReadInt32();
+            Value = new();
+            Value.Deserialize(reader, engineVersion);
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) writer.Write((byte)0);
 
-            writer.WriteUnrealString(AssetPath);
-            writer.Write(Unknown);
-
-            return ContentSize;
+            if (Value is null) throw new InvalidOperationException("Property value is null");
+            return Value.Serialize(writer, engineVersion);
         }
     }
 }

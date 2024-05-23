@@ -26,12 +26,17 @@ namespace UeSaveGame.PropertyTypes
 
         public override Type SimpleValueType => Value is FString ? typeof(FString) : typeof(byte);
 
+        public ByteProperty(FString name)
+            : this(name, new(nameof(ByteProperty)))
+        {
+        }
+
 		public ByteProperty(FString name, FString type)
             : base(name, type)
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader)
             {
@@ -50,7 +55,7 @@ namespace UeSaveGame.PropertyTypes
             }
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader)
             {
