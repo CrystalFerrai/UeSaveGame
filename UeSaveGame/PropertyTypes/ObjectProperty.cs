@@ -20,7 +20,7 @@ namespace UeSaveGame.PropertyTypes
     {
         protected override long ContentSize => 4 + (ObjectType?.SizeInBytes ?? 0);
 
-        public FString? ObjectType { get; private set; }
+        public FString? ObjectType { get; internal set; }
 
 		public ObjectProperty(FString name)
 			: this(name, new(nameof(ObjectProperty)))

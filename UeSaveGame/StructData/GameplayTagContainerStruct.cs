@@ -4,11 +4,11 @@ namespace UeSaveGame.StructData
 {
 	public class GameplayTagContainerStruct : BaseStructData
 	{
-		List<FString?> Tags { get; }
+		public IList<FString?> Tags { get; }
 
 		public GameplayTagContainerStruct()
 		{
-			Tags = new();
+			Tags = new List<FString?>();
 		}
 
 		public override IEnumerable<string> StructTypes

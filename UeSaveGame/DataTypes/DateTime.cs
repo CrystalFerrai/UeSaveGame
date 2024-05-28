@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+
 namespace UeSaveGame.DataTypes
 {
-    public struct FDateTime : IFormattable
+	public struct FDateTime : IFormattable
     {
         // FDateTime and System.DateTime use the same underlying Ticks value
         private DateTime mValue;
 
         public DateTime Value
 		{
-            get => mValue;
+			readonly get => mValue;
             set => mValue = value;
 		}
 
         public long Ticks
 		{
-            get => mValue.Ticks;
+            readonly get => mValue.Ticks;
             set => mValue = new DateTime(value);
 		}
 
@@ -41,22 +44,60 @@ namespace UeSaveGame.DataTypes
             mValue = new DateTime(ticks);
 		}
 
-        public override string ToString()
+		public static bool TryParse([NotNullWhen(true)] string? s, out FDateTime result)
+		{
+			if (s is null)
+			{
+				result = default;
+				return false;
+			}
+
+			return TryParse(s.AsSpan(), DateTimeFormatInfo.CurrentInfo, DateTimeStyles.None, out result);
+		}
+
+		public static bool TryParse(ReadOnlySpan<char> s, out FDateTime result)
+		{
+			return TryParse(s, DateTimeFormatInfo.CurrentInfo, DateTimeStyles.None, out result);
+		}
+
+		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, DateTimeStyles styles, out FDateTime result)
+		{
+			if (s is null)
+			{
+				result = default;
+				return false;
+			}
+
+			return TryParse(s.AsSpan(), provider, styles, out result);
+		}
+
+		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, DateTimeStyles styles, out FDateTime result)
+		{
+			if (DateTime.TryParse(s, provider, styles, out DateTime dt))
+			{
+				result = new FDateTime(dt);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+
+		public override readonly string ToString()
         {
             return mValue.ToString();
         }
 
-        public string ToString(string? format)
+        public readonly string ToString(string? format)
         {
             return mValue.ToString(format);
         }
 
-        public string ToString(IFormatProvider? formatProvider)
+        public readonly string ToString(IFormatProvider? formatProvider)
         {
             return mValue.ToString(formatProvider);
         }
 
-        public string ToString(string? format, IFormatProvider? formatProvider)
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
 		{
             return mValue.ToString(format, formatProvider);
 		}

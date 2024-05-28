@@ -18,7 +18,7 @@ namespace UeSaveGame.StructData
 {
 	public class IntPointStruct : BaseStructData
     {
-        FIntPoint Value { get; set; }
+        public FIntPoint Value { get; set; }
 
         public override IEnumerable<string> StructTypes
         {

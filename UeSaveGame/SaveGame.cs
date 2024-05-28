@@ -24,20 +24,20 @@ namespace UeSaveGame
     {
         private static readonly uint sMagic = 0x53415647; // SAVG
 
-        internal SaveGameHeader Header { get; private set; }
-        internal CustomFormatData CustomFormats { get; private set; }
+        internal SaveGameHeader Header { get; set; }
+        internal CustomFormatData CustomFormats { get; set; }
 
         /// <summary>
         /// The type of the save game
         /// </summary>
-        public FString? SaveClass { get; private set; }
+        public FString? SaveClass { get; internal set; }
 
         /// <summary>
         /// The save game's data/properties
         /// </summary>
-        public IList<UProperty>? Properties { get; private set; }
+        public IList<UProperty>? Properties { get; internal set; }
 
-        private SaveGame()
+        internal SaveGame()
         {
         }
 

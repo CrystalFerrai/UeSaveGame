@@ -20,7 +20,7 @@ namespace UeSaveGame.PropertyTypes
     {
         protected override long ContentSize => Value is byte ? 1 : 4 + (((FString?)Value)?.SizeInBytes ?? 0);
 
-        public FString? EnumType { get; private set; }
+        public FString? EnumType { get; set; }
 
         public override bool IsSimpleProperty => true;
 

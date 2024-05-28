@@ -17,29 +17,7 @@ namespace UeSaveGame.DataTypes
 	public class FSphere
     {
         public FVector Center;
-        public float Radius;
-
-        public static FSphere Deserialize(BinaryReader reader)
-        {
-            FSphere m = new();
-
-            m.Center.X = reader.ReadSingle();
-            m.Center.Y = reader.ReadSingle();
-            m.Center.Z = reader.ReadSingle();
-            m.Radius = reader.ReadSingle();
-
-            return m;
-        }
-
-        public long Serialize(BinaryWriter writer)
-        {
-            writer.Write(Center.X);
-            writer.Write(Center.Y);
-            writer.Write(Center.Z);
-            writer.Write(Radius);
-
-            return 16;
-        }
+        public double Radius;
 
         public override string ToString()
         {

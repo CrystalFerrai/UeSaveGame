@@ -18,16 +18,16 @@ namespace UeSaveGame.DataTypes
 	{
 		public static readonly FRotator Zero;
 
-		public float X;
-		public float Y;
-		public float Z;
+		public double X;
+		public double Y;
+		public double Z;
 
 		static FRotator()
 		{
 			Zero = new() { X = 0.0f, Y = 0.0f, Z = 0.0f };
 		}
 
-		public override string ToString()
+		public readonly override string ToString()
 		{
 			return $"{X} {Y} {Z}";
 		}

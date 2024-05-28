@@ -18,25 +18,25 @@ namespace UeSaveGame.TextData
 {
 	public class TextData_None : ITextData
     {
-        private FString?[]? mValues;
+        public FString?[]? Values { get; set; }
 
         public void Deserialize(BinaryReader reader, long size)
         {
             int count = reader.ReadInt32();
-            mValues = new FString[count];
+            Values = new FString[count];
             for (int i = 0; i < count; ++i)
             {
-                mValues[i] = reader.ReadUnrealString();
+                Values[i] = reader.ReadUnrealString();
             }
         }
 
         public long Serialize(BinaryWriter writer)
         {
-            if (mValues == null) throw new InvalidOperationException("Instance is not valid for serialization");
+            if (Values == null) throw new InvalidOperationException("Instance is not valid for serialization");
 
-            writer.Write(mValues.Length);
+            writer.Write(Values.Length);
             long len = 4;
-            foreach (FString? value in mValues)
+            foreach (FString? value in Values)
             {
                 writer.WriteUnrealString(value);
                 len += 4 + (value?.SizeInBytes ?? 0);
@@ -47,7 +47,7 @@ namespace UeSaveGame.TextData
 
         public override string ToString()
         {
-            return mValues == null ? String.Empty : string.Join(",", mValues.Select(v => v?.Value));
+            return Values == null ? String.Empty : string.Join(",", Values.Select(v => v?.Value));
         }
     }
 }

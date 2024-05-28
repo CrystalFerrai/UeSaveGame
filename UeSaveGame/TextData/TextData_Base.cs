@@ -18,29 +18,29 @@ namespace UeSaveGame.TextData
 {
 	public class TextData_Base : ITextData
     {
-        private FString? mNamespace;
-        private FString? mKey;
-        private FString? mSourceString;
+        public FString? Namespace { get; set; }
+        public FString? Key { get; set; }
+        public FString? SourceString { get; set; }
 
         public void Deserialize(BinaryReader reader, long size)
         {
-            mNamespace = reader.ReadUnrealString();
-            mKey = reader.ReadUnrealString();
-            mSourceString = reader.ReadUnrealString();
+            Namespace = reader.ReadUnrealString();
+            Key = reader.ReadUnrealString();
+            SourceString = reader.ReadUnrealString();
         }
 
         public long Serialize(BinaryWriter writer)
         {
-            writer.WriteUnrealString(mNamespace);
-            writer.WriteUnrealString(mKey);
-            writer.WriteUnrealString(mSourceString);
+            writer.WriteUnrealString(Namespace);
+            writer.WriteUnrealString(Key);
+            writer.WriteUnrealString(SourceString);
 
-            return 12 + (mNamespace?.SizeInBytes ?? 0) + (mKey?.SizeInBytes ?? 0) + (mSourceString?.SizeInBytes ?? 0);
+            return 12 + (Namespace?.SizeInBytes ?? 0) + (Key?.SizeInBytes ?? 0) + (SourceString?.SizeInBytes ?? 0);
         }
 
         public override string ToString()
         {
-            return mSourceString?.Value ?? string.Empty;
+            return SourceString?.Value ?? string.Empty;
         }
     }
 }

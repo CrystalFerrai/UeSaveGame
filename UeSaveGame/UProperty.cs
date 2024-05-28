@@ -188,12 +188,12 @@ namespace UeSaveGame
         /// Lookup the property type for a given property type name
         /// </summary>
         /// <param name="typeName">The property type name to lookup</param>
-        public static Type ResolveType(FString typeName)
+        public static Type ResolveType(string typeName)
         {
-            if (typeName.Value == null) throw new ArgumentNullException(nameof(typeName));
+            if (typeName is null) throw new ArgumentNullException(nameof(typeName));
 
             Type? type;
-            if (sTypeMap.TryGetValue(typeName.Value, out type))
+            if (sTypeMap.TryGetValue(typeName, out type))
             {
                 return type;
             }

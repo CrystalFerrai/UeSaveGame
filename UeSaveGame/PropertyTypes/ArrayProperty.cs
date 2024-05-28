@@ -18,9 +18,9 @@ namespace UeSaveGame.PropertyTypes
 {
 	public class ArrayProperty : UProperty<Array>
     {
-        private StructProperty? mPrototype;
+        internal StructProperty? StructPrototype { get; set; }
 
-        public FString? ItemType { get; private set; }
+        public FString? ItemType { get; set; }
 
         public ArrayProperty(FString name)
             : this(name, new(nameof(ArrayProperty)))
@@ -51,7 +51,7 @@ namespace UeSaveGame.PropertyTypes
             int count = reader.ReadInt32();
 
             Array? data;
-            mPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 4, ItemType, engineVersion, includeHeader, out data);
+            StructPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 4, ItemType, engineVersion, includeHeader, out data);
             Value = data;
         }
 
@@ -69,7 +69,7 @@ namespace UeSaveGame.PropertyTypes
             long size = 4;
             writer.Write(Value.Length);
 
-            size += ArraySerializationHelper.Serialize(writer, ItemType, engineVersion, includeHeader, mPrototype, Value);
+            size += ArraySerializationHelper.Serialize(writer, ItemType, engineVersion, includeHeader, StructPrototype, Value);
 
             return size;
         }

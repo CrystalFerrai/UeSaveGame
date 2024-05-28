@@ -18,28 +18,28 @@ namespace UeSaveGame.TextData
 {
 	public class TextData_StringTableEntry : ITextData
     {
-        private FString? mTable;
-        private FString? mKey;
+        public FString? Table { get; set; }
+        public FString? Key { get; set; }
 
         public void Deserialize(BinaryReader reader, long size)
         {
-            mTable = reader.ReadUnrealString();
-            mKey = reader.ReadUnrealString();
+            Table = reader.ReadUnrealString();
+            Key = reader.ReadUnrealString();
         }
 
         public long Serialize(BinaryWriter writer)
         {
-            if (mTable == null || mKey == null) throw new InvalidOperationException("Instance is not valid for serialization");
+            if (Table == null || Key == null) throw new InvalidOperationException("Instance is not valid for serialization");
 
-            writer.WriteUnrealString(mTable);
-            writer.WriteUnrealString(mKey);
+            writer.WriteUnrealString(Table);
+            writer.WriteUnrealString(Key);
 
-            return 8 + mTable.SizeInBytes + mKey.SizeInBytes;
+            return 8 + Table.SizeInBytes + Key.SizeInBytes;
         }
 
         public override string ToString()
         {
-            return $"{mTable}[{mKey}]";
+            return $"{Table}[{Key}]";
         }
     }
 }

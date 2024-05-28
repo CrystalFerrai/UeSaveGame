@@ -16,12 +16,13 @@ using UeSaveGame.TextData;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class TextProperty : UProperty<ITextData>
+    public class TextProperty : UProperty<ITextData>
     {
         private static readonly Dictionary<TextHistoryType, Type> sTextDataTypes;
 
-        private TextFlags mFlags;
-        private TextHistoryType mHistoryType;
+        public TextFlags Flags { get; set; }
+
+        public TextHistoryType HistoryType { get; set; }
 
         static TextProperty()
         {
@@ -34,12 +35,12 @@ namespace UeSaveGame.PropertyTypes
             };
         }
 
-		public TextProperty(FString name)
-			: this(name, new(nameof(TextProperty)))
-		{
-		}
+        public TextProperty(FString name)
+            : this(name, new(nameof(TextProperty)))
+        {
+        }
 
-		public TextProperty(FString name, FString type)
+        public TextProperty(FString name, FString type)
             : base(name, type)
         {
         }
@@ -48,13 +49,13 @@ namespace UeSaveGame.PropertyTypes
         {
             if (includeHeader) reader.ReadByte();
 
-            mFlags = (TextFlags)reader.ReadUInt32();
-            mHistoryType = (TextHistoryType)reader.ReadSByte();
+            Flags = (TextFlags)reader.ReadUInt32();
+            HistoryType = (TextHistoryType)reader.ReadSByte();
 
             Type? dataType;
-            if (!sTextDataTypes.TryGetValue(mHistoryType, out dataType))
+            if (!sTextDataTypes.TryGetValue(HistoryType, out dataType))
             {
-                throw new NotImplementedException($"[TextProperty] Data type {mHistoryType} is not implemented.");
+                throw new NotImplementedException($"[TextProperty] Data type {HistoryType} is not implemented.");
             }
 
             Value = (ITextData?)Activator.CreateInstance(dataType);
@@ -65,38 +66,10 @@ namespace UeSaveGame.PropertyTypes
         {
             if (includeHeader) writer.Write((byte)0);
 
-            writer.Write((int)mFlags);
-            writer.Write((sbyte)mHistoryType);
+            writer.Write((int)Flags);
+            writer.Write((sbyte)HistoryType);
 
             return 5 + (Value?.Serialize(writer) ?? 0);
-        }
-
-        [Flags]
-        private enum TextFlags : int
-        {
-            Transient = (1 << 0),
-            CultureInvariant = (1 << 1),
-            ConvertedProperty = (1 << 2),
-            Immutable = (1 << 3),
-            InitializedFromString = (1 << 4)
-        }
-
-        private enum TextHistoryType : sbyte
-        {
-            None = -1,
-            Base = 0,
-            NamedFormat,
-            OrderedFormat,
-            ArgumentFormat,
-            AsNumber,
-            AsPercent,
-            AsCurrency,
-            AsDate,
-            AsTime,
-            AsDateTime,
-            Transform,
-            StringTableEntry,
-            TextGenerator
         }
     }
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UeSaveGame.StructData;
 using UeSaveGame.Util;
@@ -32,26 +33,12 @@ namespace UeSaveGame.PropertyTypes
             sTypeMap = new Dictionary<string, Type>();
             sNameMap = new Dictionary<string, Type>();
 
-            // TODO: GlobalAssemblyCache is always false now. Find another way to filter out assemblies we don't care about
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GlobalAssemblyCache == false))
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                IEnumerable<Type> types = assembly.GetTypes().Where(t => !t.IsAbstract && t.GetInterfaces().Contains(typeof(IStructData)));
-                foreach (Type type in types)
-                {
-                    IStructData instance = (IStructData?)Activator.CreateInstance(type) ?? throw new MissingMethodException($"Could not construct an instance of struct data type {type.FullName}.");
-                    foreach (string structType in instance.StructTypes)
-                    {
-                        sTypeMap.Add(structType, type);
-                    }
-                    if (instance.KnownPropertyNames != null)
-                    {
-                        foreach (string structType in instance.KnownPropertyNames)
-                        {
-                            sNameMap.Add(structType, type);
-                        }
-                    }
-                }
+                AddStructDataFromAssembly(assembly);
             }
+
+			AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
         }
 
 		public StructProperty(FString name)
@@ -116,5 +103,67 @@ namespace UeSaveGame.PropertyTypes
         {
             return Value == null ? base.ToString() : $"{Name} [{nameof(StructProperty)} - {StructType??"no type"}] {Value?.ToString() ?? "Null"}";
         }
+
+		#region Struct data searching
+
+		private static void CurrentDomain_AssemblyLoad(object? sender, AssemblyLoadEventArgs args)
+		{
+            AddStructDataFromAssembly(args.LoadedAssembly);
+		}
+
+		private static void AddStructDataFromAssembly(Assembly assembly)
+		{
+			// Skip digging through assemblies which do not reference this assembly
+			{
+				AssemblyNameEqualityComparer assemblyComparer = new();
+
+                AssemblyName assemblyName = assembly.GetName();
+                AssemblyName thisAssemblyName = Assembly.GetExecutingAssembly().GetName();
+
+                if (!assemblyComparer.Equals(assemblyName, thisAssemblyName) &&
+                    !assembly.GetReferencedAssemblies().Contains(thisAssemblyName, assemblyComparer))
+                {
+                    return;
+                }
+            }
+
+			IEnumerable<Type> types = assembly.GetTypes().Where(t => !t.IsAbstract && t.GetInterfaces().Contains(typeof(IStructData)));
+			foreach (Type type in types)
+			{
+				IStructData instance = (IStructData?)Activator.CreateInstance(type) ?? throw new MissingMethodException($"Could not construct an instance of struct data type {type.FullName}.");
+				foreach (string structType in instance.StructTypes)
+				{
+					sTypeMap.Add(structType, type);
+				}
+				if (instance.KnownPropertyNames != null)
+				{
+					foreach (string structType in instance.KnownPropertyNames)
+					{
+						sNameMap.Add(structType, type);
+					}
+				}
+			}
+		}
+
+		private class AssemblyNameEqualityComparer : IEqualityComparer<AssemblyName>
+		{
+			public int GetHashCode([DisallowNull] AssemblyName obj)
+			{
+                return obj.Name?.GetHashCode() ?? 0;
+			}
+
+			public bool Equals(AssemblyName? x, AssemblyName? y)
+			{
+                if (x is null) return y is null;
+
+                string? a = x?.Name;
+                string? b = y?.Name;
+                if (a is null) return b is null;
+
+                return a.Equals(b);
+			}
+		}
+
+        #endregion
     }
 }

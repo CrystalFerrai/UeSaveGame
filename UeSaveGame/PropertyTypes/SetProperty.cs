@@ -16,13 +16,9 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class SetProperty : UProperty<Array>
+	public class SetProperty : ArrayProperty
     {
-        private StructProperty? mPrototype;
-
         private int mRemovedCount;
-
-        public FString? ItemType { get; private set; }
 
 		public SetProperty(FString name)
 			: this(name, new(nameof(SetProperty)))
@@ -54,7 +50,7 @@ namespace UeSaveGame.PropertyTypes
             int count = reader.ReadInt32();
 
             Array? data;
-            mPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 8, ItemType, engineVersion, includeHeader, out data);
+            StructPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 8, ItemType, engineVersion, includeHeader, out data);
             Value = data;
         }
 
@@ -79,7 +75,7 @@ namespace UeSaveGame.PropertyTypes
             size += 4;
             writer.Write(Value.Length);
 
-            size += ArraySerializationHelper.Serialize(writer, ItemType, engineVersion, includeHeader, mPrototype, Value);
+            size += ArraySerializationHelper.Serialize(writer, ItemType, engineVersion, includeHeader, StructPrototype, Value);
 
             return size;
         }

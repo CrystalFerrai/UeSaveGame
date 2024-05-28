@@ -26,7 +26,7 @@ namespace UeSaveGame.StructData
             }
         }
 
-        public IList<UProperty> Properties { get; private set; }
+        public IList<UProperty> Properties { get; set; }
 
         public PropertiesStruct()
         {

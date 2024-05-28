@@ -20,8 +20,9 @@ namespace UeSaveGame.PropertyTypes
     {
         private int mRemovedCount;
 
-        public FString? KeyType { get; private set; }
-        public FString? ValueType { get; private set; }
+        public FString? KeyType { get; set; }
+
+        public FString? ValueType { get; set; }
 
 		public MapProperty(FString name)
 			: this(name, new(nameof(MapProperty)))
