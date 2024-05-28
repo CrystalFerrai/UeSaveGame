@@ -13,6 +13,8 @@ The repo contains Visual Studio 2022 projects and is configured to build using .
 1. UeSaveGame: This is the main library.
 2. UeSaveGame.Json: This is an optional library that provides json serialization for save game data.
 
+The Json library has NuGet dependencies, so be sure to either run `dotnet restore` or "Restore NuGet Packages" from the Visual Studio solution context menu.
+
 ## How to use - Main library
 
 WARNING: Several parts of the library remain unimplemented. Things are only implemented when they are encountered in some game's save file. There is a chance that the library will fail to load or properly save a file from a game it has not yet been tested on.
