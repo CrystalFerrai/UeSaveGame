@@ -28,20 +28,20 @@ namespace UeSaveGame.PropertyTypes
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
         {
             if (includeHeader) reader.ReadByte();
 
             Value = new();
-            Value.Deserialize(reader, engineVersion);
+            Value.Deserialize(reader, packageVersion);
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
         {
             if (includeHeader) writer.Write((byte)0);
 
             if (Value is null) throw new InvalidOperationException("Property value is null");
-            return Value.Serialize(writer, engineVersion);
+            return Value.Serialize(writer, packageVersion);
         }
     }
 }

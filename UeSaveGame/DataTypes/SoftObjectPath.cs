@@ -13,9 +13,9 @@ namespace UeSaveGame.DataTypes
 
 		public FString? SubPathString { get; set; }
 
-		public void Deserialize(BinaryReader reader, EngineVersion engineVersion)
+		public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
 		{
-			if (engineVersion.Major == 4)
+			if (packageVersion < EObjectUE5Version.FSOFTOBJECTPATH_REMOVE_ASSET_PATH_FNAMES)
 			{
 				FString? path = reader.ReadUnrealString();
 				if (path is not null)
@@ -41,11 +41,11 @@ namespace UeSaveGame.DataTypes
 			SubPathString = reader.ReadUnrealString();
 		}
 
-		public long Serialize(BinaryWriter writer, EngineVersion engineVersion)
+		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			long startPos = writer.BaseStream.Position;
 
-			if (engineVersion.Major == 4)
+			if (packageVersion < EObjectUE5Version.FSOFTOBJECTPATH_REMOVE_ASSET_PATH_FNAMES)
 			{
 				FString? path = PackageName;
 				if (PackageName is not null && AssetName is not null)
@@ -54,7 +54,7 @@ namespace UeSaveGame.DataTypes
 				}
 				writer.WriteUnrealString(path);
 			}
-			else // Assuming 5 or later
+			else
 			{
 				writer.WriteUnrealString(PackageName);
 				writer.WriteUnrealString(AssetName);

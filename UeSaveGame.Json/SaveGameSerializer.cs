@@ -152,11 +152,11 @@ namespace UeSaveGame.Json
 			writer.WritePropertyName(nameof(SaveGameHeader.SaveGameVersion));
 			writer.WriteValue((int)data.SaveGameVersion);
 
-			writer.WritePropertyName(nameof(SaveGameHeader.PackageVersionUE4));
-			writer.WriteValue(data.PackageVersionUE4);
+			writer.WritePropertyName(nameof(PackageVersion.PackageVersionUE4));
+			writer.WriteValue(data.PackageVersion.PackageVersionUE4);
 
-			writer.WritePropertyName(nameof(SaveGameHeader.PackageVersionUE5));
-			writer.WriteValue(data.PackageVersionUE5);
+			writer.WritePropertyName(nameof(PackageVersion.PackageVersionUE5));
+			writer.WriteValue(data.PackageVersion.PackageVersionUE5);
 
 			writer.WritePropertyName(nameof(SaveGameHeader.EngineVersion));
 			mEngineVersionSerializer.ToJson(data.EngineVersion, writer);
@@ -182,11 +182,11 @@ namespace UeSaveGame.Json
 						case nameof(SaveGameHeader.SaveGameVersion):
 							data.SaveGameVersion = (SaveGameFileVersion)reader.ReadAsInt32()!.Value;
 							break;
-						case nameof(SaveGameHeader.PackageVersionUE4):
-							data.PackageVersionUE4 = reader.ReadAsInt32()!.Value;
+						case nameof(PackageVersion.PackageVersionUE4):
+							data.PackageVersion.PackageVersionUE4 = (EObjectUE4Version)reader.ReadAsInt32()!.Value;
 							break;
-						case nameof(SaveGameHeader.PackageVersionUE5):
-							data.PackageVersionUE5 = reader.ReadAsInt32()!.Value;
+						case nameof(PackageVersion.PackageVersionUE5):
+							data.PackageVersion.PackageVersionUE5 = (EObjectUE5Version)reader.ReadAsInt32()!.Value;
 							break;
 						case nameof(SaveGameHeader.EngineVersion):
 							data.EngineVersion = mEngineVersionSerializer.FromJson(reader);

@@ -27,12 +27,12 @@ namespace UeSaveGame.PropertyTypes
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
         {
             throw new InvalidDataException("Cannot deserialize a NoneProperty");
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
         {
             throw new InvalidDataException("Attempting to serialize a NoneProperty.");
         }

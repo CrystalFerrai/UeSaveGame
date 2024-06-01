@@ -30,7 +30,7 @@ namespace UeSaveGame.PropertyTypes
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
         {
             if (includeHeader)
             {
@@ -50,11 +50,11 @@ namespace UeSaveGame.PropertyTypes
             int count = reader.ReadInt32();
 
             Array? data;
-            StructPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 8, ItemType, engineVersion, includeHeader, out data);
+            StructPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 8, ItemType, packageVersion, includeHeader, out data);
             Value = data;
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
         {
             if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
             if (ItemType == null) throw new InvalidOperationException("Cannot serialize set with unknown item type");
@@ -75,7 +75,7 @@ namespace UeSaveGame.PropertyTypes
             size += 4;
             writer.Write(Value.Length);
 
-            size += ArraySerializationHelper.Serialize(writer, ItemType, engineVersion, includeHeader, StructPrototype, Value);
+            size += ArraySerializationHelper.Serialize(writer, ItemType, packageVersion, includeHeader, StructPrototype, Value);
 
             return size;
         }

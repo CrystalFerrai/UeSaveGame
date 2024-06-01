@@ -21,7 +21,7 @@ namespace UeSaveGame.Util
     /// </summary>
 	internal static class ArraySerializationHelper
     {
-        public static StructProperty? Deserialize(BinaryReader reader, int count, long size, FString itemType, EngineVersion engineVersion, bool includeHeader, out Array outData)
+        public static StructProperty? Deserialize(BinaryReader reader, int count, long size, FString itemType, PackageVersion packageVersion, bool includeHeader, out Array outData)
         {
             if (itemType == "StructProperty")
             {
@@ -49,7 +49,7 @@ namespace UeSaveGame.Util
                     StructProperty sp = new StructProperty(name, type);
                     sp.StructType = structItemType;
                     sp.StructGuid = guid;
-                    sp.Deserialize(reader, dataSize, false, engineVersion);
+                    sp.Deserialize(reader, dataSize, false, packageVersion);
                     data[i] = sp;
                 }
 
@@ -71,7 +71,7 @@ namespace UeSaveGame.Util
                         for (int i = 0; i < count; ++i)
                         {
                             // Data only for each item - no headers
-                            prototype.Deserialize(reader, itemSize, false, engineVersion);
+                            prototype.Deserialize(reader, itemSize, false, packageVersion);
                             data.SetValue(prototype.Value, i);
                         }
                     }
@@ -91,7 +91,7 @@ namespace UeSaveGame.Util
                         {
                             // Data only for each item - no headers
                             data[i] = (UProperty?)Activator.CreateInstance(type, FString.Empty, itemType) ?? throw new FormatException("Error reading array data");
-                            data[i].Deserialize(reader, itemSize, false, engineVersion);
+                            data[i].Deserialize(reader, itemSize, false, packageVersion);
                         }
                     }
 
@@ -102,7 +102,7 @@ namespace UeSaveGame.Util
             return null;
         }
 
-        public static long Serialize(BinaryWriter writer, FString itemType, EngineVersion engineVersion, bool includeHeader, StructProperty? prototype, Array inData)
+        public static long Serialize(BinaryWriter writer, FString itemType, PackageVersion packageVersion, bool includeHeader, StructProperty? prototype, Array inData)
         {
             long size = 0;
             if (itemType == "StructProperty")
@@ -135,7 +135,7 @@ namespace UeSaveGame.Util
                     foreach (UProperty item in inData)
                     {
                         // Data only for each item - no headers
-                        item.Serialize(writer, false, engineVersion);
+                        item.Serialize(writer, false, packageVersion);
                     }
                     long dataSize = writer.BaseStream.Position - startPosition;
 
@@ -158,7 +158,7 @@ namespace UeSaveGame.Util
                     foreach (object item in inData)
                     {
                         itemPrototype.Value = item;
-                        size += itemPrototype.Serialize(writer, false, engineVersion);
+                        size += itemPrototype.Serialize(writer, false, packageVersion);
                     }
                 }
                 else
@@ -166,7 +166,7 @@ namespace UeSaveGame.Util
                     foreach (UProperty item in inData)
                     {
                         // Data only for each item - no headers
-                        size += item.Serialize(writer, false, engineVersion);
+                        size += item.Serialize(writer, false, packageVersion);
                     }
                 }
             }

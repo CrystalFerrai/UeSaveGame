@@ -42,7 +42,7 @@ namespace UeSaveGame.Json.StructDataSerializers
 
 		public override IStructData? FromJson(JsonReader reader)
 		{
-			return new QuatStruct(false)
+			return new QuatStruct()
 			{
 				Value = QuaternionSerializer.FromJson(reader)
 			};

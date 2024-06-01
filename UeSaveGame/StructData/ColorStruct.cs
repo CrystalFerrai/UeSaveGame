@@ -28,7 +28,7 @@ namespace UeSaveGame.StructData
             }
         }
 
-        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
+        public override void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion)
         {
             FColor value = new FColor();
             value.R = reader.ReadByte();
@@ -38,7 +38,7 @@ namespace UeSaveGame.StructData
             Value = value;
         }
 
-        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
+        public override long Serialize(BinaryWriter writer, PackageVersion packageVersion)
         {
             writer.Write(Value.R);
             writer.Write(Value.G);

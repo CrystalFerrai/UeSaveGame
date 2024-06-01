@@ -19,14 +19,14 @@ namespace UeSaveGame.StructData
 			Value = new();
 		}
 
-		public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
+		public override void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion)
 		{
-			Value.Deserialize(reader, engineVersion);
+			Value.Deserialize(reader, packageVersion);
 		}
 
-		public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
+		public override long Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
-			return Value.Serialize(writer, engineVersion);
+			return Value.Serialize(writer, packageVersion);
 		}
 	}
 }

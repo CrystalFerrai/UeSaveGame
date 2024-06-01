@@ -51,7 +51,7 @@ namespace UeSaveGame.PropertyTypes
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
         {
             if (includeHeader)
             {
@@ -74,7 +74,7 @@ namespace UeSaveGame.PropertyTypes
                 {
                     instance = new PropertiesStruct();
                 }
-                instance.Deserialize(reader, size, engineVersion);
+                instance.Deserialize(reader, size, packageVersion);
                 Value = instance;
             }
             else
@@ -83,7 +83,7 @@ namespace UeSaveGame.PropertyTypes
             }
         }
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
         {
             if (includeHeader)
             {
@@ -94,7 +94,7 @@ namespace UeSaveGame.PropertyTypes
 
             if (Value != null)
             {
-                return Value.Serialize(writer, engineVersion);
+                return Value.Serialize(writer, packageVersion);
             }
             return 0;
         }
