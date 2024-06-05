@@ -54,17 +54,39 @@ namespace UeSaveGame.PropertyTypes
             }
 
             int count = reader.ReadInt32();
+            
+            // Check isFGuid as Dictionary key , it with out header and struct , just 16bytes value
+            // in C++ Like  TMap<struct FGuid, struct F.....> Field; 
+            // in C# Like    Dictionary<Guid,F.....> Field; 
+            // In GvasFile  [16bytes][Valuebytes]
+            bool isFGuid = false;
+            if (KeyType.value == "StructProperty")
+            {
+                long position = reader.BaseStream.Position;
+                int length = reader.ReadInt32();
+                // This is not rigorous,hope the value of bit A of the Guid is not within this range
+                if (length < 0 | length > 255)
+                {
+                    isFGuid = true;
+                }
+                reader.BaseStream.Position = position;
+            }
             Value = new List<KeyValuePair<UProperty, UProperty>>(count);
+            
             for (int i = 0; i < count; ++i)
             {
                 UProperty? key;
                 {
                     Type type = ResolveType(KeyType);
-                    key = (UProperty?)Activator.CreateInstance(type, FString.Empty, KeyType);
+                    FString StructName = FString.Empty;
+                    if (isFGuid)
+                    {
+                        StructName = new FString("FGuid");
+                    }
+                    key = (UProperty?)Activator.CreateInstance(type, StructName, KeyType);
                     if (key == null) throw new FormatException("Error reading map key");
                     key.Deserialize(reader, 0, false, packageVersion);
                 }
-
                 UProperty? value;
                 {
                     Type type = ResolveType(ValueType);
@@ -74,6 +96,7 @@ namespace UeSaveGame.PropertyTypes
                 }
                 Value.Add(new KeyValuePair<UProperty, UProperty>(key, value));
             }
+
             tempSize = size;
         }
 

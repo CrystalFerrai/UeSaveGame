@@ -61,6 +61,17 @@ namespace UeSaveGame.PropertyTypes
                 reader.ReadByte(); // terminator
             }
 
+            if (Name == "FGuid")
+            {
+                StructType = new FString("Guid");
+                IStructData instance;
+                Type? type = typeof(GuidStruct);
+                instance = (IStructData?)Activator.CreateInstance(type);
+                instance.Deserialize(reader, 16, packageVersion);
+                Value = instance;
+                return;
+            }
+
             if (size > 0 || StructType == null && !includeHeader)
             {
                 IStructData instance;
