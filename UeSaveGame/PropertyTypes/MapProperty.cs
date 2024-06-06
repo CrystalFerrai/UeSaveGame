@@ -60,7 +60,7 @@ namespace UeSaveGame.PropertyTypes
             // in C# Like    Dictionary<Guid,F.....> Field; 
             // In GvasFile  [16bytes][Valuebytes]
             bool isFGuid = false;
-            if (KeyType.value == "StructProperty")
+            if (KeyType == "StructProperty")
             {
                 long position = reader.BaseStream.Position;
                 int length = reader.ReadInt32();
