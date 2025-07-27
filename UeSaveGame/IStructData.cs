@@ -24,8 +24,8 @@ namespace UeSaveGame
         // Only needed for cases where type name is not saved for a custom struct type (due to being in a map or something)
         ISet<string>? KnownPropertyNames { get; }
 
-		void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion);
+		void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion);
 
-		long Serialize(BinaryWriter writer, EngineVersion engineVersion);
+		long Serialize(BinaryWriter writer, PackageVersion packageVersion);
 	}
 }

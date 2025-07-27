@@ -34,7 +34,7 @@ namespace UeSaveGame.PropertyTypes
         {
         }
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion)
+        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
         {
             if (includeHeader)
             {
@@ -62,6 +62,7 @@ namespace UeSaveGame.PropertyTypes
                     Type type = ResolveType(KeyType!);
                     key = (UProperty?)Activator.CreateInstance(type, new FString($"{Name}_Key"), KeyType);
                     if (key == null) throw new FormatException("Error reading map key");
+
                     long keySize = 0;
                     if (key is StructProperty structKey)
                     {
@@ -69,7 +70,7 @@ namespace UeSaveGame.PropertyTypes
                         structKey.StructType = new FString("Guid");
 						keySize = 16;
                     }
-                    key.Deserialize(reader, keySize, false, engineVersion);
+                    key.Deserialize(reader, keySize, false, packageVersion);
                 }
 
                 UProperty? value;
@@ -77,7 +78,7 @@ namespace UeSaveGame.PropertyTypes
                     Type type = ResolveType(ValueType!);
                     value = (UProperty?)Activator.CreateInstance(type, Name, ValueType);
                     if (value == null) throw new FormatException("Error reading map value");
-                    value.Deserialize(reader, 0, false, engineVersion);
+                    value.Deserialize(reader, 0, false, packageVersion);
                 }
                 Value.Add(new KeyValuePair<UProperty, UProperty>(key, value));
             }
@@ -86,7 +87,7 @@ namespace UeSaveGame.PropertyTypes
 
         long tempSize;
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
+        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
         {
             if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
 
@@ -104,8 +105,8 @@ namespace UeSaveGame.PropertyTypes
             writer.Write(Value.Count);
             foreach (var pair in Value)
             {
-                pair.Key.Serialize(writer, false, engineVersion);
-                pair.Value.Serialize(writer, false, engineVersion);
+                pair.Key.Serialize(writer, false, packageVersion);
+                pair.Value.Serialize(writer, false, packageVersion);
             }
 
             return writer.BaseStream.Position - startPosition;

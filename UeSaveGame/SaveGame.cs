@@ -61,7 +61,7 @@ namespace UeSaveGame
 
                 instance.SaveClass = reader.ReadUnrealString();
 
-                instance.Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, instance.Header.EngineVersion, true));
+                instance.Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, instance.Header.PackageVersion, true));
 
                 if (reader.BaseStream.Position != reader.BaseStream.Length) throw new FormatException("Did not reach the end of the file when reading.");
             }
@@ -83,7 +83,7 @@ namespace UeSaveGame
                 CustomFormats.Serialize(writer);
                 writer.WriteUnrealString(SaveClass!);
 
-                PropertySerializationHelper.WriteProperties(Properties!, writer, Header.EngineVersion, true);
+                PropertySerializationHelper.WriteProperties(Properties!, writer, Header.PackageVersion, true);
             }
         }
 
@@ -99,8 +99,7 @@ namespace UeSaveGame
     internal struct SaveGameHeader
     {
         public SaveGameFileVersion SaveGameVersion;
-        public int PackageVersionUE4;
-        public int PackageVersionUE5;
+        public PackageVersion PackageVersion;
         public EngineVersion EngineVersion;
 
         public static SaveGameHeader Deserialize(BinaryReader reader)
@@ -113,15 +112,15 @@ namespace UeSaveGame
                 throw new NotSupportedException($"Save game version {(int)instance.SaveGameVersion} is not supported at this time");
             }
 
-            instance.PackageVersionUE4 = reader.ReadInt32();
+            instance.PackageVersion.PackageVersionUE4 = (EObjectUE4Version)reader.ReadUInt32();
 
             if (instance.SaveGameVersion == SaveGameFileVersion.PackageFileSummaryVersionChange)
             {
-                instance.PackageVersionUE5 = reader.ReadInt32();
+                instance.PackageVersion.PackageVersionUE5 = (EObjectUE5Version)reader.ReadUInt32();
             }
             else
 			{
-                instance.PackageVersionUE5 = 0;
+                instance.PackageVersion.PackageVersionUE5 = EObjectUE5Version.INVALID;
 			}
 
             instance.EngineVersion = EngineVersion.Deserialize(reader);
@@ -132,10 +131,10 @@ namespace UeSaveGame
         public void Serialize(BinaryWriter writer)
         {
             writer.Write((int)SaveGameVersion);
-            writer.Write(PackageVersionUE4);
+            writer.Write((uint)PackageVersion.PackageVersionUE4);
             if (SaveGameVersion == SaveGameFileVersion.PackageFileSummaryVersionChange)
             {
-                writer.Write(PackageVersionUE5);
+                writer.Write((uint)PackageVersion.PackageVersionUE5);
             }
 			EngineVersion.Serialize(writer);
         }

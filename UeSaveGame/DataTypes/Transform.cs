@@ -32,40 +32,76 @@ namespace UeSaveGame.DataTypes
 			};
 		}
 
-        public static FTransform Deserialize(BinaryReader reader)
+        public static FTransform Deserialize(BinaryReader reader, PackageVersion packageVersion)
         {
             FTransform t = new();
+            
+            if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
+			{
+				t.Rotation.X = reader.ReadDouble();
+				t.Rotation.Y = reader.ReadDouble();
+				t.Rotation.Z = reader.ReadDouble();
+				t.Rotation.W = reader.ReadDouble();
 
-            t.Rotation.X = reader.ReadSingle();
-            t.Rotation.Y = reader.ReadSingle();
-            t.Rotation.Z = reader.ReadSingle();
-            t.Rotation.W = reader.ReadSingle();
+				t.Translation.X = reader.ReadDouble();
+				t.Translation.Y = reader.ReadDouble();
+				t.Translation.Z = reader.ReadDouble();
 
-            t.Translation.X = reader.ReadSingle();
-            t.Translation.Y = reader.ReadSingle();
-            t.Translation.Z = reader.ReadSingle();
+				t.Scale3D.X = reader.ReadDouble();
+				t.Scale3D.Y = reader.ReadDouble();
+				t.Scale3D.Z = reader.ReadDouble();
+			}
+			else
+			{
+				t.Rotation.X = reader.ReadSingle();
+				t.Rotation.Y = reader.ReadSingle();
+				t.Rotation.Z = reader.ReadSingle();
+				t.Rotation.W = reader.ReadSingle();
 
-            t.Scale3D.X = reader.ReadSingle();
-            t.Scale3D.Y = reader.ReadSingle();
-            t.Scale3D.Z = reader.ReadSingle();
+				t.Translation.X = reader.ReadSingle();
+				t.Translation.Y = reader.ReadSingle();
+				t.Translation.Z = reader.ReadSingle();
 
-            return t;
+				t.Scale3D.X = reader.ReadSingle();
+				t.Scale3D.Y = reader.ReadSingle();
+				t.Scale3D.Z = reader.ReadSingle();
+			}
+
+			return t;
         }
 
-        public long Serialize(BinaryWriter writer)
-        {
-            writer.Write(Rotation.X);
-            writer.Write(Rotation.Y);
-            writer.Write(Rotation.Z);
-            writer.Write(Rotation.W);
+        public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
+			{
+				writer.Write(Rotation.X);
+				writer.Write(Rotation.Y);
+				writer.Write(Rotation.Z);
+				writer.Write(Rotation.W);
 
-            writer.Write(Translation.X);
-            writer.Write(Translation.Y);
-            writer.Write(Translation.Z);
+				writer.Write(Translation.X);
+				writer.Write(Translation.Y);
+				writer.Write(Translation.Z);
 
-            writer.Write(Scale3D.X);
-            writer.Write(Scale3D.Y);
-            writer.Write(Scale3D.Z);
+				writer.Write(Scale3D.X);
+				writer.Write(Scale3D.Y);
+				writer.Write(Scale3D.Z);
+
+				return 80;
+			}
+			
+			writer.Write((float)Rotation.X);
+            writer.Write((float)Rotation.Y);
+            writer.Write((float)Rotation.Z);
+            writer.Write((float)Rotation.W);
+
+            writer.Write((float)Translation.X);
+            writer.Write((float)Translation.Y);
+            writer.Write((float)Translation.Z);
+
+            writer.Write((float)Scale3D.X);
+            writer.Write((float)Scale3D.Y);
+            writer.Write((float)Scale3D.Z);
 
             return 40;
         }

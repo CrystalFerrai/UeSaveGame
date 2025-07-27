@@ -18,8 +18,6 @@ namespace UeSaveGame.StructData
 {
 	public class QuatStruct : BaseStructData
     {
-        private bool mSerializeAsSingles;
-
         public override IEnumerable<string> StructTypes
         {
             get
@@ -32,60 +30,48 @@ namespace UeSaveGame.StructData
 
 		public QuatStruct()
         {
-            mSerializeAsSingles = true;
         }
 
-		public QuatStruct(bool serializeAsSingles)
-        {
-            mSerializeAsSingles = serializeAsSingles;
-        }
-
-        public override void Deserialize(BinaryReader reader, long size, EngineVersion engineVersion)
+        public override void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion)
         {
             FQuat q;
 
-            switch (size)
-            {
-                case 0:
-                case 16:
-                    mSerializeAsSingles = true;
-					q.X = reader.ReadSingle();
-					q.Y = reader.ReadSingle();
-					q.Z = reader.ReadSingle();
-					q.W = reader.ReadSingle();
-					break;
-                case 32:
-					mSerializeAsSingles = false;
-					q.X = reader.ReadDouble();
-					q.Y = reader.ReadDouble();
-					q.Z = reader.ReadDouble();
-					q.W = reader.ReadDouble();
-					break;
-                default:
-                    throw new NotImplementedException($"QuatStruct: Unknown struct size {size}");
-            }
+            if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
+			{
+				q.X = reader.ReadDouble();
+				q.Y = reader.ReadDouble();
+				q.Z = reader.ReadDouble();
+				q.W = reader.ReadDouble();
+			}
+            else
+			{
+				q.X = reader.ReadSingle();
+				q.Y = reader.ReadSingle();
+				q.Z = reader.ReadSingle();
+				q.W = reader.ReadSingle();
+			}
 
             Value = q;
         }
 
-        public override long Serialize(BinaryWriter writer, EngineVersion engineVersion)
-        {
-            if (mSerializeAsSingles)
-            {
-                writer.Write((float)Value.X);
-                writer.Write((float)Value.Y);
-                writer.Write((float)Value.Z);
-                writer.Write((float)Value.W);
+        public override long Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		{
+            if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
+			{
+				writer.Write(Value.X);
+				writer.Write(Value.Y);
+				writer.Write(Value.Z);
+				writer.Write(Value.W);
 
-				return 16;
+				return 32;
 			}
 
-			writer.Write(Value.X);
-			writer.Write(Value.Y);
-			writer.Write(Value.Z);
-			writer.Write(Value.W);
+            writer.Write((float)Value.X);
+            writer.Write((float)Value.Y);
+            writer.Write((float)Value.Z);
+            writer.Write((float)Value.W);
 
-            return 32;
+			return 16;
         }
 
         public override string ToString()

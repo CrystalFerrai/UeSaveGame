@@ -43,7 +43,7 @@ namespace UeSaveGame.Json.StructDataSerializers
 
 		public override IStructData? FromJson(JsonReader reader)
 		{
-			return new VectorStruct(false)
+			return new VectorStruct()
 			{
 				Value = VectorSerializer.FromJson(reader)
 			};

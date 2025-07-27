@@ -22,11 +22,11 @@ namespace UeSaveGame.Util
     /// </summary>
 	public static class PropertySerializationHelper
     {
-        public static IEnumerable<UProperty> ReadProperties(BinaryReader reader, EngineVersion engineVersion, bool isNullTerminated)
+        public static IEnumerable<UProperty> ReadProperties(BinaryReader reader, PackageVersion packageVersion, bool isNullTerminated)
         {
             for (; ; )
             {
-                UProperty prop = UProperty.Deserialize(reader, engineVersion);
+                UProperty prop = UProperty.Deserialize(reader, packageVersion);
                 if (prop is NoneProperty)
                 {
                     if (isNullTerminated) reader.ReadInt32();
@@ -36,13 +36,13 @@ namespace UeSaveGame.Util
             }
         }
 
-        public static long WriteProperties(IEnumerable<UProperty> properties, BinaryWriter writer, EngineVersion engineVersion, bool isNullTerminated)
+        public static long WriteProperties(IEnumerable<UProperty> properties, BinaryWriter writer, PackageVersion packageVersion, bool isNullTerminated)
         {
             long size = 0;
 
             foreach (UProperty prop in properties)
             {
-                size += prop.Serialize(writer, engineVersion);
+                size += prop.Serialize(writer, packageVersion);
             }
             size += 4;
             writer.WriteUnrealString(new FString("None", Encoding.ASCII));

@@ -82,10 +82,10 @@ namespace UeSaveGame.TextData
 			switch (result.Type)
 			{
 				case EFormatArgumentType.Int:
-					result.Value = reader.ReadInt32();
+					result.Value = reader.ReadInt64();
 					break;
 				case EFormatArgumentType.UInt:
-					result.Value = reader.ReadUInt32();
+					result.Value = reader.ReadUInt64();
 					break;
 				case EFormatArgumentType.Float:
 					result.Value = reader.ReadSingle();

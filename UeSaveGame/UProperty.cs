@@ -117,7 +117,7 @@ namespace UeSaveGame
         /// <param name="size">The size of the property (from the propery metadata)</param>
         /// <param name="includeHeader">Whether the serialzied property value includes a header</param>
         /// <param name="engineVersion">The version of Unreal Engine that was used to serialize this property</param>
-        public abstract void Deserialize(BinaryReader reader, long size, bool includeHeader, EngineVersion engineVersion);
+        public abstract void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion);
 
         /// <summary>
         /// Serialize this property's data
@@ -126,7 +126,7 @@ namespace UeSaveGame
         /// <param name="includeHeader">Whether to write a value header</param>
         /// <param name="engineVersion">The version of Unreal Engine to serialize this property for</param>
         /// <returns>The size of the serialized data</returns>
-        public abstract long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion);
+        public abstract long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion);
 
 		/// <summary>
 		/// Deserializes a new property
@@ -135,7 +135,7 @@ namespace UeSaveGame
 		/// <param name="engineVersion">The version of Unreal Engine that was used to serialize this property</param>
 		/// <param name="overrideName">If specified, overrides the name of the new property</param>
 		/// <returns>The deserialized property</returns>
-		public static UProperty Deserialize(BinaryReader reader, EngineVersion engineVersion, FString? overrideName = null)
+		public static UProperty Deserialize(BinaryReader reader, PackageVersion packageVersion, FString? overrideName = null)
         {
             FString name = reader.ReadUnrealString() ?? throw new FormatException("Error reading property name");
             if (name == "None") return new NoneProperty();
@@ -145,7 +145,7 @@ namespace UeSaveGame
 
             UProperty property = (UProperty)Activator.CreateInstance(ResolveType(type), overrideName ?? name, type)!;
 
-            property.Deserialize(reader, size, true, engineVersion);
+            property.Deserialize(reader, size, true, packageVersion);
             return property;
         }
 
@@ -155,7 +155,7 @@ namespace UeSaveGame
 		/// <param name="writer">The writer to write the proiperty to</param>
 		/// <param name="engineVersion">The version of Unreal Engine to serialize this property for</param>
 		/// <returns>The size of this property's data, not including metadata</returns>
-		public long Serialize(BinaryWriter writer, EngineVersion engineVersion)
+		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
         {
             long size = ContentSize;
 
@@ -166,7 +166,7 @@ namespace UeSaveGame
             {
                 // Optimized path for types that know their size upfront
                 writer.Write(ContentSize);
-                Serialize(writer, true, engineVersion);
+                Serialize(writer, true, packageVersion);
             }
             else
             {
@@ -174,7 +174,7 @@ namespace UeSaveGame
                 long sizePosition = writer.BaseStream.Position;
                 writer.Write((long)0);
                 
-                size = Serialize(writer, true, engineVersion);
+                size = Serialize(writer, true, packageVersion);
                 long returnPosition = writer.BaseStream.Position;
 
                 writer.BaseStream.Seek(sizePosition, SeekOrigin.Begin);
@@ -218,12 +218,12 @@ namespace UeSaveGame
             {
                 using (BinaryWriter writer = new(stream, Encoding.ASCII, true))
                 {
-                    Serialize(writer, EngineVersion.LatestTested);
+                    Serialize(writer, PackageVersion.LatestTested);
                 }
                 stream.Seek(0, SeekOrigin.Begin);
                 using (BinaryReader reader = new(stream, Encoding.ASCII, true))
                 {
-                    return Deserialize(reader, EngineVersion.LatestTested, overrideName);
+                    return Deserialize(reader, PackageVersion.LatestTested, overrideName);
                 }
             }
         }
