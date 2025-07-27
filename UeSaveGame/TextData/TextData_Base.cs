@@ -22,14 +22,14 @@ namespace UeSaveGame.TextData
 		public FString? Key { get; set; }
 		public FString? SourceString { get; set; }
 
-		public void Deserialize(BinaryReader reader)
+		public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
 		{
 			Namespace = reader.ReadUnrealString();
 			Key = reader.ReadUnrealString();
 			SourceString = reader.ReadUnrealString();
 		}
 
-		public long Serialize(BinaryWriter writer)
+		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			writer.WriteUnrealString(Namespace);
 			writer.WriteUnrealString(Key);

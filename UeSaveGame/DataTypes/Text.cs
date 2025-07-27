@@ -38,7 +38,7 @@ namespace UeSaveGame.DataTypes
 			};
 		}
 
-		public void Deserialize(BinaryReader reader)
+		public void Deserialize(BinaryReader reader, PackageVersion version)
 		{
 			Flags = (TextFlags)reader.ReadUInt32();
 			HistoryType = (TextHistoryType)reader.ReadSByte();
@@ -50,15 +50,15 @@ namespace UeSaveGame.DataTypes
 			}
 
 			Value = (ITextData?)Activator.CreateInstance(dataType);
-			Value?.Deserialize(reader);
+			Value?.Deserialize(reader, version);
 		}
 
-		public long Serialize(BinaryWriter writer)
+		public long Serialize(BinaryWriter writer, PackageVersion version)
 		{
 			writer.Write((int)Flags);
 			writer.Write((sbyte)HistoryType);
 
-			return 5 + (Value?.Serialize(writer) ?? 0);
+			return 5 + (Value?.Serialize(writer, version) ?? 0);
 		}
 
 		public override string ToString()

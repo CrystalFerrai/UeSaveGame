@@ -19,8 +19,8 @@ namespace UeSaveGame
     /// </summary>
 	public interface ITextData
     {
-        void Deserialize(BinaryReader reader);
+        void Deserialize(BinaryReader reader, PackageVersion packageVersion);
 
-        long Serialize(BinaryWriter writer);
+        long Serialize(BinaryWriter writer, PackageVersion packageVersion);
     }
 }

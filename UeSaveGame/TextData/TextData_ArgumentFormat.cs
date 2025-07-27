@@ -23,28 +23,23 @@ namespace UeSaveGame.TextData
 
 		public TextArgument[]? Arguments { get; set; }
 
-		public void Deserialize(BinaryReader reader)
+		public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
 		{
 			FormatString = new();
-			FormatString.Deserialize(reader);
-
-			if (FormatString.Value is TextData_Base tdn && tdn.SourceString is not null && tdn.SourceString.Equals("{AAA} {BB}{X} {CCC}"))
-			{
-				System.Diagnostics.Debugger.Break();
-			}
+			FormatString.Deserialize(reader, packageVersion);
 
 			int argumentCount = reader.ReadInt32();
 			Arguments = new TextArgument[argumentCount];
 			for (int i = 0; i < argumentCount; ++i)
 			{
-				Arguments[i] = TextArgument.Deserialize(reader);
+				Arguments[i] = TextArgument.Deserialize(reader, packageVersion);
 			}
 		}
 
-		public long Serialize(BinaryWriter writer)
+		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			if (FormatString is null) throw new InvalidOperationException("TextData_ArgumentFormat has no format string");
-			long size = FormatString.Serialize(writer);
+			long size = FormatString.Serialize(writer, packageVersion);
 
 			if (Arguments is null)
 			{
@@ -56,7 +51,7 @@ namespace UeSaveGame.TextData
 			size += 4;
 			for (int i = 0; i < Arguments.Length; ++i)
 			{
-				size += Arguments[i].Serialize(writer);
+				size += Arguments[i].Serialize(writer, packageVersion);
 			}
 
 			return size;
@@ -74,7 +69,7 @@ namespace UeSaveGame.TextData
 		public EFormatArgumentType Type;
 		public object Value;
 
-		public static TextArgument Deserialize(BinaryReader reader)
+		public static TextArgument Deserialize(BinaryReader reader, PackageVersion packageVersion)
 		{
 			TextArgument result = new();
 			result.Name = reader.ReadUnrealString();
@@ -82,11 +77,20 @@ namespace UeSaveGame.TextData
 			switch (result.Type)
 			{
 				case EFormatArgumentType.Int:
-					result.Value = reader.ReadInt64();
+					// FUE5ReleaseStreamObjectVersion.TextFormatArgumentData64bitSupport is checked in the engine, which corresponds
+					// to the same engine release as EObjectUE5Version.LARGE_WORLD_COORDINATES
+					if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
+					{
+						result.Value = reader.ReadInt64();
+					}
+					else
+					{
+						result.Value = reader.ReadInt32();
+					}
 					break;
 				case EFormatArgumentType.UInt:
-					result.Value = reader.ReadUInt64();
-					break;
+					// This case is not implemented in the engine, so we shouldn't see it here unless the engine has been updated to add it
+					throw new NotImplementedException();
 				case EFormatArgumentType.Float:
 					result.Value = reader.ReadSingle();
 					break;
@@ -95,7 +99,7 @@ namespace UeSaveGame.TextData
 					break;
 				case EFormatArgumentType.Text:
 					result.Value = new FText();
-					((FText)result.Value).Deserialize(reader);
+					((FText)result.Value).Deserialize(reader, packageVersion);
 					break;
 				case EFormatArgumentType.Gender:
 					result.Value = (ETextGender)reader.ReadByte();
@@ -105,7 +109,7 @@ namespace UeSaveGame.TextData
 			return result;
 		}
 
-		public long Serialize(BinaryWriter writer)
+		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			writer.WriteUnrealString(Name);
 			writer.Write((byte)Type);
@@ -114,13 +118,22 @@ namespace UeSaveGame.TextData
 			switch (Type)
 			{
 				case EFormatArgumentType.Int:
-					writer.Write((int)Value);
-					size += 4;
+					// FUE5ReleaseStreamObjectVersion.TextFormatArgumentData64bitSupport is checked in the engine, which corresponds
+					// to the same engine release as EObjectUE5Version.LARGE_WORLD_COORDINATES
+					if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
+					{
+						writer.Write((long)Value);
+						size += 8;
+					}
+					else
+					{
+						writer.Write((int)Value);
+						size += 4;
+					}
 					break;
 				case EFormatArgumentType.UInt:
-					writer.Write((uint)Value);
-					size += 4;
-					break;
+					// This case is not implemented in the engine, so we shouldn't see it here unless the engine has been updated to add it
+					throw new NotImplementedException();
 				case EFormatArgumentType.Float:
 					writer.Write((float)Value);
 					size += 4;
@@ -130,7 +143,7 @@ namespace UeSaveGame.TextData
 					size += 8;
 					break;
 				case EFormatArgumentType.Text:
-					size += ((FText)Value).Serialize(writer);
+					size += ((FText)Value).Serialize(writer, packageVersion);
 					break;
 				case EFormatArgumentType.Gender:
 					writer.Write((byte)(ETextGender)Value);

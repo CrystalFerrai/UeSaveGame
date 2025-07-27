@@ -72,7 +72,14 @@ namespace UeSaveGame.PropertyTypes
                 }
                 else
                 {
-                    instance = new PropertiesStruct();
+                    if (reader.IsUnrealStringAndNotNull())
+                    {
+                        instance = new PropertiesStruct();
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Unable to interpret struct data. If this is a custom struct type, you should implement a custom IStructData to handle serialization.");
+                    }
                 }
                 instance.Deserialize(reader, size, packageVersion);
                 Value = instance;

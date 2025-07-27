@@ -21,13 +21,13 @@ namespace UeSaveGame.TextData
         public FString? Table { get; set; }
         public FString? Key { get; set; }
 
-        public void Deserialize(BinaryReader reader)
+        public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
         {
             Table = reader.ReadUnrealString();
             Key = reader.ReadUnrealString();
         }
 
-        public long Serialize(BinaryWriter writer)
+        public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
         {
             if (Table == null || Key == null) throw new InvalidOperationException("Instance is not valid for serialization");
 

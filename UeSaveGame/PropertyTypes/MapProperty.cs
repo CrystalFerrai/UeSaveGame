@@ -66,9 +66,12 @@ namespace UeSaveGame.PropertyTypes
                     long keySize = 0;
                     if (key is StructProperty structKey)
                     {
-                        // Guid is the only known struct type used in map keys
-                        structKey.StructType = new FString("Guid");
-						keySize = 16;
+                        if (!reader.IsUnrealStringAndNotNull())
+                        {
+                            // Guid is the only known struct type used in map keys aside from generic properties structs
+                            structKey.StructType = new FString("Guid");
+                            keySize = 16;
+                        }
                     }
                     key.Deserialize(reader, keySize, false, packageVersion);
                 }

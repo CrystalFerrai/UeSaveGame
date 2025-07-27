@@ -29,7 +29,7 @@ namespace UeSaveGame.TextData
 
         public FString? CultureName { get; set; }
 
-        public void Deserialize(BinaryReader reader)
+        public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
         {
             FDateTime dateTime = new FDateTime();
             dateTime.Ticks = reader.ReadInt64();
@@ -42,7 +42,7 @@ namespace UeSaveGame.TextData
             CultureName = reader.ReadUnrealString();
         }
 
-        public long Serialize(BinaryWriter writer)
+        public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
         {
             long startPosition = writer.BaseStream.Position;
 

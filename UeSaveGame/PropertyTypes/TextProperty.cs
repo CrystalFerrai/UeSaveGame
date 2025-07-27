@@ -33,7 +33,7 @@ namespace UeSaveGame.PropertyTypes
             if (includeHeader) reader.ReadByte();
 
             Value = new FText();
-            Value.Deserialize(reader);
+            Value.Deserialize(reader, packageVersion);
         }
 
         public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
@@ -41,7 +41,7 @@ namespace UeSaveGame.PropertyTypes
             if (includeHeader) writer.Write((byte)0);
 
             if (Value is null) throw new InvalidOperationException("TextProperty has no value to serialize");
-            return Value.Serialize(writer);
+            return Value.Serialize(writer, packageVersion);
         }
     }
 }

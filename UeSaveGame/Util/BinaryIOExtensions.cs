@@ -21,9 +21,59 @@ namespace UeSaveGame.Util
     /// </summary>
 	public static class BinaryIOExtensions
     {
+        /// <summary>
+        /// Checks if the reader is positioned on data that can be read as a non-null FString
+        /// </summary>
+        /// <param name="maxLength">The maximum string length to consider valid</param>
+        public static bool IsUnrealStringAndNotNull(this BinaryReader reader, int maxLength = 1024)
+        {
+            long bytesUntilEnd = reader.BaseStream.Length - reader.BaseStream.Position;
+            if (bytesUntilEnd < 5)
+            {
+                return false;
+            }
+
+            bool result = false;
+
+            long originalPosition = reader.BaseStream.Position;
+            
+            int length = reader.ReadInt32();
+            int absLength = Math.Abs(length);
+            if (absLength > 0 && absLength < maxLength)
+            {
+                if (length < 0)
+				{
+                    int byteCount = -length * 2;
+                    if (byteCount <= bytesUntilEnd)
+                    {
+                        byte[] data = reader.ReadBytes(byteCount);
+                        if (data.Length > 1 && data[^2] == 0 && data[^1] == 0)
+                        {
+                            result = true;
+                        }
+                    }
+				}
+                else
+				{
+                    if (length <= bytesUntilEnd)
+                    {
+                        byte[] data = reader.ReadBytes(length);
+                        if (data[^1] == 0)
+                        {
+                            result = true;
+                        }
+                    }
+				}
+            }
+
+            reader.BaseStream.Seek(originalPosition, SeekOrigin.Begin);
+
+            return result;
+        }
+
         public static FString? ReadUnrealString(this BinaryReader reader)
         {
-            var length = reader.ReadInt32();
+            int length = reader.ReadInt32();
             switch (length)
             {
                 case 0:

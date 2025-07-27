@@ -20,7 +20,7 @@ namespace UeSaveGame.TextData
 	{
 		public FString? Value { get; set; }
 
-		public void Deserialize(BinaryReader reader)
+		public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
 		{
 			bool hasInvariantString = reader.ReadInt32() != 0;
 			if (hasInvariantString)
@@ -29,7 +29,7 @@ namespace UeSaveGame.TextData
 			}
 		}
 
-		public long Serialize(BinaryWriter writer)
+		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			if (Value is null)
 			{
