@@ -17,37 +17,34 @@ using UeSaveGame.Util;
 namespace UeSaveGame.TextData
 {
 	public class TextData_None : ITextData
-    {
-        public FString?[]? Values { get; set; }
+	{
+		public FString? Value { get; set; }
 
-        public void Deserialize(BinaryReader reader, long size)
-        {
-            int count = reader.ReadInt32();
-            Values = new FString[count];
-            for (int i = 0; i < count; ++i)
-            {
-                Values[i] = reader.ReadUnrealString();
-            }
-        }
+		public void Deserialize(BinaryReader reader)
+		{
+			bool hasInvariantString = reader.ReadInt32() != 0;
+			if (hasInvariantString)
+			{
+				Value = reader.ReadUnrealString();
+			}
+		}
 
-        public long Serialize(BinaryWriter writer)
-        {
-            if (Values == null) throw new InvalidOperationException("Instance is not valid for serialization");
+		public long Serialize(BinaryWriter writer)
+		{
+			if (Value is null)
+			{
+				writer.Write(0);
+				return 4;
+			}
 
-            writer.Write(Values.Length);
-            long len = 4;
-            foreach (FString? value in Values)
-            {
-                writer.WriteUnrealString(value);
-                len += 4 + (value?.SizeInBytes ?? 0);
-            }
+			writer.Write(1);
+			writer.WriteUnrealString(Value);
+			return 8 + Value.SizeInBytes;
+		}
 
-            return len;
-        }
-
-        public override string ToString()
-        {
-            return Values == null ? String.Empty : string.Join(",", Values.Select(v => v?.Value));
-        }
-    }
+		public override string ToString()
+		{
+			return Value?.ToString() ?? string.Empty;
+		}
+	}
 }

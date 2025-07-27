@@ -94,6 +94,7 @@ namespace UeSaveGame
 				//{ nameof(LazyObjectProperty), typeof(LazyObjectProperty) },
 				{ nameof(MapProperty), typeof(MapProperty) },
 				{ nameof(MulticastDelegateProperty), typeof(MulticastDelegateProperty) },
+				{ nameof(MulticastInlineDelegateProperty), typeof(MulticastInlineDelegateProperty) },
 				{ nameof(NameProperty), typeof(NameProperty) },
 				{ nameof(ObjectProperty), typeof(ObjectProperty) },
 				//{ nameof(RotatorProperty), typeof(RotatorProperty) },

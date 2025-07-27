@@ -63,15 +63,22 @@ namespace UeSaveGame.Util
 
                 if (prototype.IsSimpleProperty)
                 {
+                    Type initialItemType = prototype.SimpleValueType;
                     Array data = (Array?)Activator.CreateInstance(prototype.SimpleValueType.MakeArrayType(), count) ?? throw new FormatException("Error building array data");
 
-                    if (count > 0)
+					if (count > 0)
                     {
                         long itemSize = size / count;
                         for (int i = 0; i < count; ++i)
                         {
                             // Data only for each item - no headers
                             prototype.Deserialize(reader, itemSize, false, engineVersion);
+
+                            if (i == 0 && prototype.SimpleValueType != initialItemType)
+                            {
+                                // The type changed after deserializtion. Recreate the array. This happens when a ByteProperty is referencing strings instead of bytes.
+								data = (Array?)Activator.CreateInstance(prototype.SimpleValueType.MakeArrayType(), count) ?? throw new FormatException("Error building array data");
+							}
                             data.SetValue(prototype.Value, i);
                         }
                     }

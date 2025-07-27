@@ -43,9 +43,9 @@ namespace UeSaveGame.PropertyTypes
                 reader.ReadByte();
             }
 
-            if (KeyType == null || ValueType == null) throw new InvalidOperationException("Unknown map type cannot be read.");
+			if (KeyType == null || ValueType == null) throw new InvalidOperationException("Unknown map type cannot be read.");
 
-            mRemovedCount = reader.ReadInt32();
+			mRemovedCount = reader.ReadInt32();
             if (mRemovedCount != 0)
             {
                 // Maps share some serialization code with Sets. Sets can store items to be removed as well as items to be added.
@@ -59,15 +59,22 @@ namespace UeSaveGame.PropertyTypes
             {
                 UProperty? key;
                 {
-                    Type type = ResolveType(KeyType);
-                    key = (UProperty?)Activator.CreateInstance(type, FString.Empty, KeyType);
+                    Type type = ResolveType(KeyType!);
+                    key = (UProperty?)Activator.CreateInstance(type, new FString($"{Name}_Key"), KeyType);
                     if (key == null) throw new FormatException("Error reading map key");
-                    key.Deserialize(reader, 0, false, engineVersion);
+                    long keySize = 0;
+                    if (key is StructProperty structKey)
+                    {
+                        // Guid is the only known struct type used in map keys
+                        structKey.StructType = new FString("Guid");
+						keySize = 16;
+                    }
+                    key.Deserialize(reader, keySize, false, engineVersion);
                 }
 
                 UProperty? value;
                 {
-                    Type type = ResolveType(ValueType);
+                    Type type = ResolveType(ValueType!);
                     value = (UProperty?)Activator.CreateInstance(type, Name, ValueType);
                     if (value == null) throw new FormatException("Error reading map value");
                     value.Deserialize(reader, 0, false, engineVersion);

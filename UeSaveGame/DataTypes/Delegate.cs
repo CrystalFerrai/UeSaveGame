@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace UeSaveGame
+namespace UeSaveGame.DataTypes
 {
-    /// <summary>
-    /// Interface for data types usable by UE text properties
-    /// </summary>
-	public interface ITextData
-    {
-        void Deserialize(BinaryReader reader);
+	public struct UDelegate
+	{
+		public FString? ClassName { get; set; }
 
-        long Serialize(BinaryWriter writer);
-    }
+		public FString? FunctionName { get; set; }
+	}
 }

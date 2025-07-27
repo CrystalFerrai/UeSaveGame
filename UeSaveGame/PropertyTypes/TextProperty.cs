@@ -12,29 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using UeSaveGame.TextData;
+using UeSaveGame.DataTypes;
 
 namespace UeSaveGame.PropertyTypes
 {
-    public class TextProperty : UProperty<ITextData>
+    public class TextProperty : UProperty<FText>
     {
-        private static readonly Dictionary<TextHistoryType, Type> sTextDataTypes;
-
-        public TextFlags Flags { get; set; }
-
-        public TextHistoryType HistoryType { get; set; }
-
-        static TextProperty()
-        {
-            sTextDataTypes = new Dictionary<TextHistoryType, Type>()
-            {
-                { TextHistoryType.None, typeof(TextData_None) },
-                { TextHistoryType.Base, typeof(TextData_Base) },
-                { TextHistoryType.AsDateTime, typeof(TextData_AsDateTime) },
-                { TextHistoryType.StringTableEntry, typeof(TextData_StringTableEntry) }
-            };
-        }
-
         public TextProperty(FString name)
             : this(name, new(nameof(TextProperty)))
         {
@@ -49,27 +32,16 @@ namespace UeSaveGame.PropertyTypes
         {
             if (includeHeader) reader.ReadByte();
 
-            Flags = (TextFlags)reader.ReadUInt32();
-            HistoryType = (TextHistoryType)reader.ReadSByte();
-
-            Type? dataType;
-            if (!sTextDataTypes.TryGetValue(HistoryType, out dataType))
-            {
-                throw new NotImplementedException($"[TextProperty] Data type {HistoryType} is not implemented.");
-            }
-
-            Value = (ITextData?)Activator.CreateInstance(dataType);
-            Value?.Deserialize(reader, size - (includeHeader ? 6 : 5));
+            Value = new FText();
+            Value.Deserialize(reader);
         }
 
         public override long Serialize(BinaryWriter writer, bool includeHeader, EngineVersion engineVersion)
         {
             if (includeHeader) writer.Write((byte)0);
 
-            writer.Write((int)Flags);
-            writer.Write((sbyte)HistoryType);
-
-            return 5 + (Value?.Serialize(writer) ?? 0);
+            if (Value is null) throw new InvalidOperationException("TextProperty has no value to serialize");
+            return Value.Serialize(writer);
         }
     }
 }

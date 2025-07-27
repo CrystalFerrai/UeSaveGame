@@ -29,7 +29,7 @@ namespace UeSaveGame.TextData
 
         public FString? CultureName { get; set; }
 
-        public void Deserialize(BinaryReader reader, long size)
+        public void Deserialize(BinaryReader reader)
         {
             FDateTime dateTime = new FDateTime();
             dateTime.Ticks = reader.ReadInt64();

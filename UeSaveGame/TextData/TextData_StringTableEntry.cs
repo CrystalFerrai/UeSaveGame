@@ -21,7 +21,7 @@ namespace UeSaveGame.TextData
         public FString? Table { get; set; }
         public FString? Key { get; set; }
 
-        public void Deserialize(BinaryReader reader, long size)
+        public void Deserialize(BinaryReader reader)
         {
             Table = reader.ReadUnrealString();
             Key = reader.ReadUnrealString();

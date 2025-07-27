@@ -17,17 +17,14 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	// Note: This type was found in Subverse. The format does not appear to match UE4 serialization code for this type.
-	// If the type is ever found elsewhere, we should check if the format is the same.
-
-	public class MulticastDelegateProperty : UProperty<UDelegate[]>
+	public class MulticastInlineDelegateProperty : UProperty<UDelegate[]>
 	{
-		public MulticastDelegateProperty(FString name)
-			: this(name, new(nameof(MulticastDelegateProperty)))
+		public MulticastInlineDelegateProperty(FString name)
+			: this(name, new(nameof(MulticastInlineDelegateProperty)))
 		{
 		}
 
-		public MulticastDelegateProperty(FString name, FString type)
+		public MulticastInlineDelegateProperty(FString name, FString type)
             : base(name, type)
         {
         }

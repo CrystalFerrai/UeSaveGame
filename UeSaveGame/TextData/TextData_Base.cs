@@ -17,30 +17,30 @@ using UeSaveGame.Util;
 namespace UeSaveGame.TextData
 {
 	public class TextData_Base : ITextData
-    {
-        public FString? Namespace { get; set; }
-        public FString? Key { get; set; }
-        public FString? SourceString { get; set; }
+	{
+		public FString? Namespace { get; set; }
+		public FString? Key { get; set; }
+		public FString? SourceString { get; set; }
 
-        public void Deserialize(BinaryReader reader, long size)
-        {
-            Namespace = reader.ReadUnrealString();
-            Key = reader.ReadUnrealString();
-            SourceString = reader.ReadUnrealString();
-        }
+		public void Deserialize(BinaryReader reader)
+		{
+			Namespace = reader.ReadUnrealString();
+			Key = reader.ReadUnrealString();
+			SourceString = reader.ReadUnrealString();
+		}
 
-        public long Serialize(BinaryWriter writer)
-        {
-            writer.WriteUnrealString(Namespace);
-            writer.WriteUnrealString(Key);
-            writer.WriteUnrealString(SourceString);
+		public long Serialize(BinaryWriter writer)
+		{
+			writer.WriteUnrealString(Namespace);
+			writer.WriteUnrealString(Key);
+			writer.WriteUnrealString(SourceString);
 
-            return 12 + (Namespace?.SizeInBytes ?? 0) + (Key?.SizeInBytes ?? 0) + (SourceString?.SizeInBytes ?? 0);
-        }
+			return 12 + (Namespace?.SizeInBytes ?? 0) + (Key?.SizeInBytes ?? 0) + (SourceString?.SizeInBytes ?? 0);
+		}
 
-        public override string ToString()
-        {
-            return SourceString?.Value ?? string.Empty;
-        }
-    }
+		public override string ToString()
+		{
+			return SourceString?.Value ?? string.Empty;
+		}
+	}
 }
