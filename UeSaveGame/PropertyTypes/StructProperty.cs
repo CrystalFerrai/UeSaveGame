@@ -120,22 +120,7 @@ namespace UeSaveGame.PropertyTypes
 
 		private static void AddStructDataFromAssembly(Assembly assembly)
 		{
-			// Skip digging through assemblies which do not reference this assembly
-			{
-				AssemblyNameEqualityComparer assemblyComparer = new();
-
-                AssemblyName assemblyName = assembly.GetName();
-                AssemblyName thisAssemblyName = Assembly.GetExecutingAssembly().GetName();
-
-                if (!assemblyComparer.Equals(assemblyName, thisAssemblyName) &&
-                    !assembly.GetReferencedAssemblies().Contains(thisAssemblyName, assemblyComparer))
-                {
-                    return;
-                }
-            }
-
-			IEnumerable<Type> types = assembly.GetTypes().Where(t => !t.IsAbstract && t.GetInterfaces().Contains(typeof(IStructData)));
-			foreach (Type type in types)
+			foreach (Type type in TypeSearcher.FindDerivedTypes(typeof(IStructData), assembly))
 			{
 				IStructData instance = (IStructData?)Activator.CreateInstance(type) ?? throw new MissingMethodException($"Could not construct an instance of struct data type {type.FullName}.");
 				foreach (string structType in instance.StructTypes)
@@ -149,25 +134,6 @@ namespace UeSaveGame.PropertyTypes
 						sNameMap.Add(structType, type);
 					}
 				}
-			}
-		}
-
-		private class AssemblyNameEqualityComparer : IEqualityComparer<AssemblyName>
-		{
-			public int GetHashCode([DisallowNull] AssemblyName obj)
-			{
-                return obj.Name?.GetHashCode() ?? 0;
-			}
-
-			public bool Equals(AssemblyName? x, AssemblyName? y)
-			{
-                if (x is null) return y is null;
-
-                string? a = x?.Name;
-                string? b = y?.Name;
-                if (a is null) return b is null;
-
-                return a.Equals(b);
 			}
 		}
 
