@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,36 +15,36 @@
 namespace UeSaveGame.StructData
 {
 	public class GuidStruct : BaseStructData
-    {
-        public override IEnumerable<string> StructTypes
-        {
-            get
-            {
-                yield return "Guid";
-            }
-        }
+	{
+		public override IEnumerable<string> StructTypes
+		{
+			get
+			{
+				yield return "Guid";
+			}
+		}
 
-        public Guid Value { get; set; }
+		public Guid Value { get; set; }
 
-        public GuidStruct()
-        {
-        }
+		public GuidStruct()
+		{
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion)
-        {
-            Value = new Guid(reader.ReadBytes(16));
-        }
+		public override void Deserialize(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			Value = new Guid(reader.ReadBytes(16));
+		}
 
-        public override long Serialize(BinaryWriter writer, PackageVersion packageVersion)
-        {
-            writer.Write(Value.ToByteArray());
+		public override int Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			writer.Write(Value.ToByteArray());
 
-            return 16;
-        }
+			return 16;
+		}
 
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
-    }
+		public override string ToString()
+		{
+			return Value.ToString();
+		}
+	}
 }

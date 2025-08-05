@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,32 +16,23 @@ using UeSaveGame.DataTypes;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class SoftObjectProperty : UProperty<SoftObjectPath>
+	public class SoftObjectProperty : FProperty<SoftObjectPath>
 	{
 		public SoftObjectProperty(FString name)
-			: this(name, new(nameof(SoftObjectProperty)))
+			: base(name)
 		{
 		}
 
-		public SoftObjectProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			Value = new();
+			Value.Deserialize(reader, packageVersion);
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader) reader.ReadByte();
-
-            Value = new();
-            Value.Deserialize(reader, packageVersion);
-        }
-
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader) writer.Write((byte)0);
-
-            if (Value is null) throw new InvalidOperationException("Property value is null");
-            return Value.Serialize(writer, packageVersion);
-        }
-    }
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (Value is null) throw new InvalidOperationException("Property value is null");
+			return Value.Serialize(writer, packageVersion);
+		}
+	}
 }

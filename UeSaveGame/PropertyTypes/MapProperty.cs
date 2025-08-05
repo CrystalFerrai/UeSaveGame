@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,108 +16,117 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class MapProperty : UProperty<IList<KeyValuePair<UProperty, UProperty>>>
-    {
-        private int mRemovedCount;
+	public class MapProperty : FProperty<IList<KeyValuePair<FProperty, FProperty>>>
+	{
+		private int mRemovedCount;
 
-        public FString? KeyType { get; set; }
+		public FPropertyTypeName? KeyType { get; set; }
 
-        public FString? ValueType { get; set; }
+		public FPropertyTypeName? ValueType { get; set; }
 
 		public MapProperty(FString name)
-			: this(name, new(nameof(MapProperty)))
+			: base(name)
 		{
 		}
 
-		public MapProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
+		protected internal override void ProcessTypeName(FPropertyTypeName typeName, PackageVersion packageVersion)
+		{
+			if (packageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				if (typeName.Parameters.Count != 2)
+				{
+					throw new InvalidDataException("Failed to read key and value types for MapProperty");
+				}
+				KeyType = typeName.Parameters[0];
+				ValueType = typeName.Parameters[1];
+			}
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader)
-            {
-                KeyType = reader.ReadUnrealString();
-                ValueType = reader.ReadUnrealString();
-                reader.ReadByte();
-            }
+		protected internal override void DeserializeHeader(BinaryReader reader, PackageVersion packageVersion)
+		{
+			if (packageVersion < EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				KeyType = new(reader.ReadUnrealString()!);
+				ValueType = new(reader.ReadUnrealString()!);
+			}
+		}
 
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
 			if (KeyType == null || ValueType == null) throw new InvalidOperationException("Unknown map type cannot be read.");
 
 			mRemovedCount = reader.ReadInt32();
-            if (mRemovedCount != 0)
-            {
-                // Maps share some serialization code with Sets. Sets can store items to be removed as well as items to be added.
-                // Not sure if such a feature exists for maps, but it has not yet been encountered if it does.
-                throw new NotImplementedException();
-            }
+			if (mRemovedCount != 0)
+			{
+				// Maps share some serialization code with Sets. Sets can store items to be removed as well as items to be added.
+				// Not sure if such a feature exists for maps, but it has not yet been encountered if it does.
+				throw new NotImplementedException();
+			}
 
-            int count = reader.ReadInt32();
-            Value = new List<KeyValuePair<UProperty, UProperty>>(count);
-            for (int i = 0; i < count; ++i)
-            {
-                UProperty? key;
-                {
-                    Type type = ResolveType(KeyType!);
-                    key = (UProperty?)Activator.CreateInstance(type, new FString($"{Name}_Key"), KeyType);
-                    if (key == null) throw new FormatException("Error reading map key");
+			int count = reader.ReadInt32();
+			Value = new List<KeyValuePair<FProperty, FProperty>>(count);
+			for (int i = 0; i < count; ++i)
+			{
+				FProperty? key;
+				{
+					Type type = ResolveType(KeyType!.Name);
+					key = (FProperty?)Activator.CreateInstance(type, new FString($"{mPropertyName}_Key"));
+					if (key == null) throw new FormatException("Error reading map key");
 
-                    long keySize = 0;
-                    if (key is StructProperty structKey)
-                    {
-                        if (!reader.IsUnrealStringAndNotNull())
-                        {
-                            // Guid is the only known struct type used in map keys aside from generic properties structs
-                            structKey.StructType = new FString("Guid");
-                            keySize = 16;
-                        }
-                    }
-                    key.Deserialize(reader, keySize, false, packageVersion);
-                }
+					int keySize = 0;
+					if (key is StructProperty structKey)
+					{
+						if (!reader.IsUnrealStringAndNotNull())
+						{
+							// Guid is the only known struct type used in map keys aside from generic properties structs
+							structKey.StructType = new(new("Guid"));
+							keySize = 16;
+						}
+					}
+					key.DeserializeValue(reader, keySize, packageVersion);
+				}
 
-                UProperty? value;
-                {
-                    Type type = ResolveType(ValueType!);
-                    value = (UProperty?)Activator.CreateInstance(type, Name, ValueType);
-                    if (value == null) throw new FormatException("Error reading map value");
-                    value.Deserialize(reader, 0, false, packageVersion);
-                }
-                Value.Add(new KeyValuePair<UProperty, UProperty>(key, value));
-            }
-            tempSize = size;
-        }
+				FProperty? value;
+				{
+					Type type = ResolveType(ValueType!.Name);
+					value = (FProperty?)Activator.CreateInstance(type, mPropertyName);
+					if (value == null) throw new FormatException("Error reading map value");
+					value.DeserializeValue(reader, 0, packageVersion);
+				}
+				Value.Add(new KeyValuePair<FProperty, FProperty>(key, value));
+			}
+		}
 
-        long tempSize;
+		protected internal override void SerializeHeader(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (packageVersion < EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				writer.WriteUnrealString(KeyType!.Name);
+				writer.WriteUnrealString(ValueType!.Name);
+			}
+		}
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
 
-            if (includeHeader)
-            {
-                writer.WriteUnrealString(KeyType);
-                writer.WriteUnrealString(ValueType);
-                writer.Write((byte)0);
-            }
+			long startPosition = writer.BaseStream.Position;
 
-            long startPosition = writer.BaseStream.Position;
+			writer.Write(mRemovedCount);
 
-            writer.Write(mRemovedCount);
+			writer.Write(Value.Count);
+			foreach (var pair in Value)
+			{
+				pair.Key.SerializeValue(writer, packageVersion);
+				pair.Value.SerializeValue(writer, packageVersion);
+			}
 
-            writer.Write(Value.Count);
-            foreach (var pair in Value)
-            {
-                pair.Key.Serialize(writer, false, packageVersion);
-                pair.Value.Serialize(writer, false, packageVersion);
-            }
+			return (int)(writer.BaseStream.Position - startPosition);
+		}
 
-            return writer.BaseStream.Position - startPosition;
-        }
-
-        public override string ToString()
-        {
-            return Value == null ? base.ToString() : $"{Name} [{nameof(MapProperty)}<{KeyType},{ValueType}>] Count = {Value.Count}";
-        }
-    }
+		public override string? ToString()
+		{
+			return $"<{KeyType},{ValueType}> Count = {Value?.Count ?? 0}";
+		}
+	}
 }

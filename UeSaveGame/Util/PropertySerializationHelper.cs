@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,42 +17,44 @@ using UeSaveGame.PropertyTypes;
 
 namespace UeSaveGame.Util
 {
-    /// <summary>
-    /// Utility for serialization of standard UE property lists
-    /// </summary>
+	/// <summary>
+	/// Utility for serialization of standard UE property lists
+	/// </summary>
 	public static class PropertySerializationHelper
-    {
-        public static IEnumerable<UProperty> ReadProperties(BinaryReader reader, PackageVersion packageVersion, bool isNullTerminated)
-        {
-            for (; ; )
-            {
-                UProperty prop = UProperty.Deserialize(reader, packageVersion);
-                if (prop is NoneProperty)
-                {
-                    if (isNullTerminated) reader.ReadInt32();
-                    break;
-                }
-                yield return prop;
-            }
-        }
+	{
+		public static IEnumerable<FPropertyTag> ReadProperties(BinaryReader reader, PackageVersion packageVersion, bool isNullTerminated)
+		{
+			for (; ; )
+			{
+				FPropertyTag prop = FPropertyTag.Deserialize(reader, packageVersion);
+				prop.DeserializeProperty(reader, packageVersion);
+				if (prop.IsNone)
+				{
+					if (isNullTerminated) reader.ReadInt32();
+					break;
+				}
+				yield return prop;
+			}
+		}
 
-        public static long WriteProperties(IEnumerable<UProperty> properties, BinaryWriter writer, PackageVersion packageVersion, bool isNullTerminated)
-        {
-            long size = 0;
+		public static long WriteProperties(IEnumerable<FPropertyTag> properties, BinaryWriter writer, PackageVersion packageVersion, bool isNullTerminated)
+		{
+			long size = 0;
 
-            foreach (UProperty prop in properties)
-            {
-                size += prop.Serialize(writer, packageVersion);
-            }
-            size += 4;
-            writer.WriteUnrealString(new FString("None", Encoding.ASCII));
-            if (isNullTerminated)
-            {
-                size += 4;
-                writer.Write((Int32)0);
-            }
+			foreach (FPropertyTag prop in properties)
+			{
+				prop.Serialize(writer, packageVersion);
+				size += prop.SerializeProperty(writer, packageVersion);
+			}
+			size += 4;
+			writer.WriteUnrealString(new FString("None", Encoding.ASCII));
+			if (isNullTerminated)
+			{
+				size += 4;
+				writer.Write((Int32)0);
+			}
 
-            return size;
-        }
-    }
+			return size;
+		}
+	}
 }

@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,18 @@
 
 namespace UeSaveGame
 {
-    /// <summary>
-    /// Interface for data types usable in UE structs
-    /// </summary>
+	/// <summary>
+	/// Interface for data types usable in UE structs
+	/// </summary>
 	public interface IStructData
-    {
-        IEnumerable<string> StructTypes { get; }
+	{
+		IEnumerable<string> StructTypes { get; }
 
-        // Only needed for cases where type name is not saved for a custom struct type (due to being in a map or something)
-        ISet<string>? KnownPropertyNames { get; }
+		// Only needed for cases where type name is not saved for a custom struct type (due to being in a map or something)
+		ISet<string>? KnownPropertyNames { get; }
 
-		void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion);
+		void Deserialize(BinaryReader reader, int size, PackageVersion packageVersion);
 
-		long Serialize(BinaryWriter writer, PackageVersion packageVersion);
+		int Serialize(BinaryWriter writer, PackageVersion packageVersion);
 	}
 }

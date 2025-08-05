@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,57 +18,57 @@ using UeSaveGame.Util;
 namespace UeSaveGame.TextData
 {
 	public class TextData_AsDateTime : ITextData
-    {
-        public FDateTime DateTime { get; set; }
+	{
+		public FDateTime DateTime { get; set; }
 
-        public DateTimeStyle DateStyle { get; set; }
+		public DateTimeStyle DateStyle { get; set; }
 
-        public DateTimeStyle TimeStyle { get; set; }
+		public DateTimeStyle TimeStyle { get; set; }
 
-        public FString? TimeZone { get; set; }
+		public FString? TimeZone { get; set; }
 
-        public FString? CultureName { get; set; }
+		public FString? CultureName { get; set; }
 
-        public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
-        {
-            FDateTime dateTime = new FDateTime();
-            dateTime.Ticks = reader.ReadInt64();
-            DateTime = dateTime;
+		public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
+		{
+			FDateTime dateTime = new FDateTime();
+			dateTime.Ticks = reader.ReadInt64();
+			DateTime = dateTime;
 
-            DateStyle = (DateTimeStyle)reader.ReadSByte();
-            TimeStyle = (DateTimeStyle)reader.ReadSByte();
+			DateStyle = (DateTimeStyle)reader.ReadSByte();
+			TimeStyle = (DateTimeStyle)reader.ReadSByte();
 
-            TimeZone = reader.ReadUnrealString();
-            CultureName = reader.ReadUnrealString();
-        }
+			TimeZone = reader.ReadUnrealString();
+			CultureName = reader.ReadUnrealString();
+		}
 
-        public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
-        {
-            long startPosition = writer.BaseStream.Position;
+		public int Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			long startPosition = writer.BaseStream.Position;
 
-            writer.Write(DateTime.Ticks);
+			writer.Write(DateTime.Ticks);
 
-            writer.Write((sbyte)DateStyle);
-            writer.Write((sbyte)TimeStyle);
+			writer.Write((sbyte)DateStyle);
+			writer.Write((sbyte)TimeStyle);
 
-            writer.WriteUnrealString(TimeZone);
-            writer.WriteUnrealString(CultureName);
+			writer.WriteUnrealString(TimeZone);
+			writer.WriteUnrealString(CultureName);
 
-            return writer.BaseStream.Position - startPosition;
-        }
+			return (int)(writer.BaseStream.Position - startPosition);
+		}
 
-        public override string ToString()
-        {
-            return DateTime.ToString();
-        }
-    }
+		public override string ToString()
+		{
+			return DateTime.ToString();
+		}
+	}
 
-    public enum DateTimeStyle : sbyte
-    {
-        Default,
-        Short,
-        Medium,
-        Long,
-        Full
-    }
+	public enum DateTimeStyle : sbyte
+	{
+		Default,
+		Short,
+		Medium,
+		Long,
+		Full
+	}
 }

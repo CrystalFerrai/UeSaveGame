@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,13 +13,14 @@
 // limitations under the License.
 
 using Newtonsoft.Json;
+using UeSaveGame.DataTypes;
 using UeSaveGame.PropertyTypes;
 
 namespace UeSaveGame.Json.PropertySerializers
 {
 	internal class MulticastDelegatePropertySerializer : IPropertySerializer
 	{
-		public void ToJson(UProperty property, JsonWriter writer)
+		public void ToJson(FProperty property, JsonWriter writer)
 		{
 			MulticastDelegateProperty delegateProperty = (MulticastDelegateProperty)property;
 
@@ -44,7 +45,7 @@ namespace UeSaveGame.Json.PropertySerializers
 			writer.WriteEndArray();
 		}
 
-		public void FromJson(UProperty property, JsonReader reader)
+		public void FromJson(FProperty property, JsonReader reader)
 		{
 			MulticastDelegateProperty delegateProperty = (MulticastDelegateProperty)property;
 

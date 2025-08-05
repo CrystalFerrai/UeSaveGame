@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ namespace UeSaveGame
 		/// <summary>
 		/// The save game's data/properties
 		/// </summary>
-		public IList<UProperty>? Properties { get; internal set; }
+		public IList<FPropertyTag>? Properties { get; internal set; }
 
 		/// <summary>
 		/// The custom save class for this save game type, if one exists
@@ -80,16 +80,11 @@ namespace UeSaveGame
 
 				instance.CustomFormats = CustomFormatData.Deserialize(reader);
 
-				instance.SaveClass = reader.ReadUnrealString();
+				instance.SetSaveClass(reader.ReadUnrealString());
 
-				SaveClassBase? customSaveClass = null;
-				if (instance.SaveClass is not null && sSaveClassMap.TryGetValue(instance.SaveClass, out Type? saveClassType))
+				if (instance.CustomSaveClass is not null && instance.CustomSaveClass.HasCustomHeader)
 				{
-					instance.CustomSaveClass = customSaveClass = (SaveClassBase)Activator.CreateInstance(saveClassType)!;
-					if (customSaveClass.HasCustomHeader)
-					{
-						customSaveClass.DeserializeHeader(reader);
-					}
+					instance.CustomSaveClass.DeserializeHeader(reader);
 				}
 
 				if (instance.Header.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
@@ -98,13 +93,13 @@ namespace UeSaveGame
 					if (unknown != 0) throw new NotImplementedException();
 				}
 
-				if (customSaveClass is not null && customSaveClass.HasCustomData)
+				if (instance.CustomSaveClass is not null && instance.CustomSaveClass.HasCustomData)
 				{
-					customSaveClass.DeserializeData(reader);
+					instance.CustomSaveClass.DeserializeData(reader);
 				}
 				else
 				{
-					instance.Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, instance.Header.PackageVersion, true));
+					instance.Properties = new List<FPropertyTag>(PropertySerializationHelper.ReadProperties(reader, instance.Header.PackageVersion, true));
 				}
 
 				if (reader.BaseStream.Position != reader.BaseStream.Length) throw new FormatException("Did not reach the end of the file when reading.");
@@ -166,6 +161,15 @@ namespace UeSaveGame
 			}
 		}
 
+		internal void SetSaveClass(FString? saveClass)
+		{
+			SaveClass = saveClass;
+			if (SaveClass is not null && sSaveClassMap.TryGetValue(SaveClass, out Type? saveClassType))
+			{
+				CustomSaveClass = (SaveClassBase)Activator.CreateInstance(saveClassType)!;
+			}
+		}
+
 		public override string ToString()
 		{
 			return $"{SaveClass} - {Properties?.Count ?? 0} Properties";
@@ -182,15 +186,18 @@ namespace UeSaveGame
 		{
 			foreach (Type type in TypeSearcher.FindDerivedTypes(typeof(SaveClassBase), assembly))
 			{
-				SaveClassPathAttribute? classPathAttribute = type.GetCustomAttribute<SaveClassPathAttribute>();
-				if (classPathAttribute is null)
+				IEnumerable<SaveClassPathAttribute> classPathAttributes = type.GetCustomAttributes<SaveClassPathAttribute>();
+				if (!classPathAttributes.Any())
 				{
 					throw new MissingAttributeException(type, typeof(SaveClassPathAttribute));
 				}
 
-				if (!sSaveClassMap.TryAdd(classPathAttribute.ClassPath, type))
+				foreach (SaveClassPathAttribute classPathAttribute in classPathAttributes)
 				{
-					throw new DuplicateRegistrationException(classPathAttribute.ClassPath, $"Cannot register class '{classPathAttribute.ClassPath}' with type '{type.FullName}' because it is already registered with another type.");
+					if (!sSaveClassMap.TryAdd(classPathAttribute.ClassPath, type))
+					{
+						throw new DuplicateRegistrationException(classPathAttribute.ClassPath, $"Cannot register class '{classPathAttribute.ClassPath}' with type '{type.FullName}' because it is already registered with another type.");
+					}
 				}
 			}
 		}

@@ -36,10 +36,10 @@ namespace UeSaveGame.TextData
 			}
 		}
 
-		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		public int Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			if (FormatString is null) throw new InvalidOperationException("TextData_ArgumentFormat has no format string");
-			long size = FormatString.Serialize(writer, packageVersion);
+			int size = FormatString.Serialize(writer, packageVersion);
 
 			if (Arguments is null)
 			{
@@ -109,11 +109,11 @@ namespace UeSaveGame.TextData
 			return result;
 		}
 
-		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		public int Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			writer.WriteUnrealString(Name);
 			writer.Write((byte)Type);
-			long size = 4 + (Name?.SizeInBytes ?? 0) + 1;
+			int size = 4 + (Name?.SizeInBytes ?? 0) + 1;
 
 			switch (Type)
 			{
@@ -122,12 +122,26 @@ namespace UeSaveGame.TextData
 					// to the same engine release as EObjectUE5Version.LARGE_WORLD_COORDINATES
 					if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
 					{
-						writer.Write((long)Value);
+						if (Value is int vi)
+						{
+							writer.Write((long)vi);
+						}
+						else
+						{
+							writer.Write((long)Value);
+						}
 						size += 8;
 					}
 					else
 					{
-						writer.Write((int)Value);
+						if (Value is long vl)
+						{
+							writer.Write((int)vl);
+						}
+						else
+						{
+							writer.Write((int)Value);
+						}
 						size += 4;
 					}
 					break;

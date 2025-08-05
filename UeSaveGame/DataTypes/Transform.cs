@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 namespace UeSaveGame.DataTypes
 {
 	public class FTransform
-    {
-        public static readonly FTransform Identity;
+	{
+		public static readonly FTransform Identity;
 
-        public FQuat Rotation;
-        public FVector Translation;
-        public FVector Scale3D;
+		public FQuat Rotation;
+		public FVector Translation;
+		public FVector Scale3D;
 
-        static FTransform()
-        {
+		static FTransform()
+		{
 			Identity = new()
 			{
 				Rotation = FQuat.Identity,
@@ -32,11 +32,11 @@ namespace UeSaveGame.DataTypes
 			};
 		}
 
-        public static FTransform Deserialize(BinaryReader reader, PackageVersion packageVersion)
-        {
-            FTransform t = new();
-            
-            if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
+		public static FTransform Deserialize(BinaryReader reader, PackageVersion packageVersion)
+		{
+			FTransform t = new();
+
+			if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
 			{
 				t.Rotation.X = reader.ReadDouble();
 				t.Rotation.Y = reader.ReadDouble();
@@ -68,9 +68,9 @@ namespace UeSaveGame.DataTypes
 			}
 
 			return t;
-        }
+		}
 
-        public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
 			{
@@ -89,26 +89,26 @@ namespace UeSaveGame.DataTypes
 
 				return 80;
 			}
-			
+
 			writer.Write((float)Rotation.X);
-            writer.Write((float)Rotation.Y);
-            writer.Write((float)Rotation.Z);
-            writer.Write((float)Rotation.W);
+			writer.Write((float)Rotation.Y);
+			writer.Write((float)Rotation.Z);
+			writer.Write((float)Rotation.W);
 
-            writer.Write((float)Translation.X);
-            writer.Write((float)Translation.Y);
-            writer.Write((float)Translation.Z);
+			writer.Write((float)Translation.X);
+			writer.Write((float)Translation.Y);
+			writer.Write((float)Translation.Z);
 
-            writer.Write((float)Scale3D.X);
-            writer.Write((float)Scale3D.Y);
-            writer.Write((float)Scale3D.Z);
+			writer.Write((float)Scale3D.X);
+			writer.Write((float)Scale3D.Y);
+			writer.Write((float)Scale3D.Z);
 
-            return 40;
-        }
+			return 40;
+		}
 
-        public override string ToString()
-        {
-            return $"R({Rotation}) T({Translation}) S({Scale3D})";
-        }
-    }
+		public override string ToString()
+		{
+			return $"R({Rotation}) T({Translation}) S({Scale3D})";
+		}
+	}
 }

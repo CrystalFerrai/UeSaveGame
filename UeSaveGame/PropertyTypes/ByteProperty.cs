@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,63 +16,72 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class ByteProperty : UProperty
-    {
-        protected override long ContentSize => Value is byte ? 1 : 4 + (((FString?)Value)?.SizeInBytes ?? 0);
+	public class ByteProperty : FProperty
+	{
+		public FPropertyTypeName? EnumType { get; set; }
 
-        public FString? EnumType { get; set; }
+		public override bool IsSimpleProperty => true;
 
-        public override bool IsSimpleProperty => true;
+		public override Type SimpleValueType => Value is FString ? typeof(FString) : typeof(byte);
 
-        public override Type SimpleValueType => Value is FString ? typeof(FString) : typeof(byte);
+		public ByteProperty(FString name)
+			: base(name)
+		{
+		}
 
-        public ByteProperty(FString name)
-            : this(name, new(nameof(ByteProperty)))
-        {
-        }
+		protected internal override void ProcessTypeName(FPropertyTypeName typeName, PackageVersion packageVersion)
+		{
+			if (packageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				if (typeName.Parameters.Count != 1)
+				{
+					throw new InvalidDataException("Failed to read enum type for ByteProperty");
+				}
+				EnumType = typeName.Parameters[0];
+			}
+		}
 
-		public ByteProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
+		protected internal override void DeserializeHeader(BinaryReader reader, PackageVersion packageVersion)
+		{
+			if (packageVersion < EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				EnumType = new(reader.ReadUnrealString()!);
+			}
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader)
-            {
-                EnumType = reader.ReadUnrealString();
-                reader.ReadByte();
-            }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			switch (size)
+			{
+				case 1:
+					Value = reader.ReadByte();
+					break;
+				default:
+					Value = reader.ReadUnrealString();
+					break;
+			}
+		}
 
-            switch (size)
-            {
-                case 1:
-                    Value = reader.ReadByte();
-                    break;
-                default:
-                    Value = reader.ReadUnrealString();
-                    break;
-            }
-        }
+		protected internal override void SerializeHeader(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (packageVersion < EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				writer.WriteUnrealString(EnumType!.Name);
+			}
+		}
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader)
-            {
-                writer.WriteUnrealString(EnumType);
-                writer.Write((byte)0);
-            }
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (Value is byte b)
+			{
+				writer.Write(b);
+			}
+			else if (Value is FString s)
+			{
+				writer.WriteUnrealString(s);
+			}
 
-            if (Value is byte b)
-            {
-                writer.Write(b);
-            }
-            else if (Value is FString s)
-            {
-                writer.WriteUnrealString(s);
-            }
-
-            return ContentSize;
-        }
-    }
+			return Value is byte ? 1 : 4 + (((FString?)Value)?.SizeInBytes ?? 0);
+		}
+	}
 }

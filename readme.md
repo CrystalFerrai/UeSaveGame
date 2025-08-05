@@ -2,7 +2,7 @@
 
 This is a .NET library for reading and writing standard Unreal Engine 4 and 5 save game files. This library should work with most games which do not use any custom serialization, but may require updating for games it hasn't seen before.
 
-Currently supports Unreal Engine versions 4.27 - 5.3. Support for 5.4+ may be added at some point in the future.
+Currently supports Unreal Engine versions 4.27 - 5.4. Later versions may work, but have not been tested.
 
 ## Releases
 
@@ -74,13 +74,13 @@ This is just one of my many free time projects. No support or documentation is o
 The following games have been tested using the library. Testing consists of loading a file, saving it, and checking that the output is binary equal to the input. Testing of the Json library is less comprehensive, so there may be games listed as working which will not convert to/from json properly.
 
 ### Working
+* Abiotic Factor - Working but requires custom save classes to serialize custom headers.
 * Aven Colony - Technically works, but the data is just a couple large byte arrays that would need further decoding
 * Carnal Instinct - Fully working
 * Icarus - Fully working. There is a block of base64 in prospect json files. Convert it to binary, then decompress with zlib, then use `PropertySerializationHelper.ReadProperties` to read the data. (It is basically a save file with no header.)
 * Parcel Simulator - Working but requires a custom `IStructData` implementation for the `F_ParcelCriterion_Contents` struct which is not included in the library.
 
 ### Not working
-* Abiotic Factor - Need to add support for UE 5.4+
 * Dragon Quest XI - Files are compressed. Have not attempted to decompress and examine
 * Moss - Crashes, cause unknown, needs investigation
 * Satisfactory - Missing file headers, could possibly be made to work but tools exist for this game already

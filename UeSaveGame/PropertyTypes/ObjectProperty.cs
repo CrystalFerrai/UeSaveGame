@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,55 +16,43 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class ObjectProperty : UProperty
-    {
-        protected override long ContentSize => 4 + (ObjectType?.SizeInBytes ?? 0);
-
-        public FString? ObjectType { get; internal set; }
+	public class ObjectProperty : FProperty
+	{
+		public FString? ObjectType { get; internal set; }
 
 		public ObjectProperty(FString name)
-			: this(name, new(nameof(ObjectProperty)))
+			: base(name)
 		{
 		}
 
-		public ObjectProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			ObjectType = reader.ReadUnrealString();
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader) reader.ReadByte();
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			writer.WriteUnrealString(ObjectType);
+			return 4 + (ObjectType?.SizeInBytes ?? 0);
+		}
 
-            ObjectType = reader.ReadUnrealString();
-        }
+		public override int GetHashCode()
+		{
+			if (ObjectType == null) throw new InvalidOperationException("Object property must be loaded before it can be used as a hash key.");
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader) writer.Write((byte)0);
+			int hash = base.GetHashCode();
+			hash = hash * 23 + ObjectType.GetHashCode();
+			return hash;
+		}
 
-            writer.WriteUnrealString(ObjectType);
+		public override bool Equals(object? obj)
+		{
+			return base.Equals(obj) && obj is ObjectProperty op && ObjectType == op.ObjectType;
+		}
 
-            return ContentSize;
-        }
-
-        public override int GetHashCode()
-        {
-            if (ObjectType == null) throw new InvalidOperationException("Object property must be loaded before it can be used as a hash key.");
-
-            int hash = base.GetHashCode();
-            hash = hash * 23 + ObjectType.GetHashCode();
-            return hash;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return base.Equals(obj) && obj is ObjectProperty op && ObjectType == op.ObjectType;
-        }
-
-        public override string ToString()
-        {
-            return $"{Name} [{Type}] {(Value?.ToString() ?? ObjectType ?? string.Empty)}";
-        }
-    }
+		public override string ToString()
+		{
+			return $"{Value?.ToString() ?? ObjectType ?? string.Empty}";
+		}
+	}
 }

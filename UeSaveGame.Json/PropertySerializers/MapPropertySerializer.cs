@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,20 +19,20 @@ namespace UeSaveGame.Json.PropertySerializers
 {
 	internal class MapPropertySerializer : IPropertySerializer
 	{
-		public void ToJson(UProperty property, JsonWriter writer)
+		public void ToJson(FProperty property, JsonWriter writer)
 		{
 			MapProperty mapProperty = (MapProperty)property;
 
 			writer.WriteStartObject();
 
 			writer.WritePropertyName(nameof(MapProperty.KeyType));
-			writer.WriteFStringValue(mapProperty.KeyType);
+			PropertyTypeNameSerializer.Write(mapProperty.KeyType, writer);
 
 			writer.WritePropertyName(nameof(MapProperty.ValueType));
-			writer.WriteFStringValue(mapProperty.ValueType);
+			PropertyTypeNameSerializer.Write(mapProperty.ValueType, writer);
 
 			writer.WritePropertyName(nameof(MapProperty.Value));
-			
+
 			writer.WriteStartArray();
 
 			if (mapProperty.Value is not null)
@@ -42,10 +42,12 @@ namespace UeSaveGame.Json.PropertySerializers
 					writer.WriteStartObject();
 
 					writer.WritePropertyName("Key");
-					PropertiesSerializer.WriteProperty(pair.Key, writer);
+					IPropertySerializer keySerializer = PropertiesSerializer.GetSerializer(mapProperty.KeyType!.Name);
+					keySerializer.ToJson(pair.Key, writer);
 
 					writer.WritePropertyName("Value");
-					PropertiesSerializer.WriteProperty(pair.Value, writer);
+					IPropertySerializer valueSerializer = PropertiesSerializer.GetSerializer(mapProperty.ValueType!.Name);
+					valueSerializer.ToJson(pair.Value, writer);
 
 					writer.WriteEndObject();
 				}
@@ -56,11 +58,11 @@ namespace UeSaveGame.Json.PropertySerializers
 			writer.WriteEndObject();
 		}
 
-		public void FromJson(UProperty property, JsonReader reader)
+		public void FromJson(FProperty property, JsonReader reader)
 		{
 			MapProperty mapProperty = (MapProperty)property;
 
-			List<KeyValuePair<UProperty, UProperty>> data = new();
+			List<KeyValuePair<FProperty, FProperty>> data = new();
 
 			while (reader.Read())
 			{
@@ -74,10 +76,10 @@ namespace UeSaveGame.Json.PropertySerializers
 					switch ((string)reader.Value!)
 					{
 						case nameof(MapProperty.KeyType):
-							mapProperty.KeyType = reader.ReadAsFString();
+							mapProperty.KeyType = PropertyTypeNameSerializer.Read(reader);
 							break;
 						case nameof(MapProperty.ValueType):
-							mapProperty.ValueType = reader.ReadAsFString();
+							mapProperty.ValueType = PropertyTypeNameSerializer.Read(reader);
 							break;
 						case nameof(MapProperty.Value):
 							while (reader.Read())
@@ -89,8 +91,8 @@ namespace UeSaveGame.Json.PropertySerializers
 
 								if (reader.TokenType == JsonToken.StartObject)
 								{
-									UProperty? key = null;
-									UProperty? value = null;
+									FProperty? key = null;
+									FProperty? value = null;
 
 									while (reader.Read())
 									{
@@ -104,10 +106,20 @@ namespace UeSaveGame.Json.PropertySerializers
 											switch ((string)reader.Value!)
 											{
 												case "Key":
-													key = PropertiesSerializer.ReadProperty(reader);
+													{
+														reader.Read();
+														IPropertySerializer keySerializer = PropertiesSerializer.GetSerializer(mapProperty.KeyType!.Name);
+														key = FProperty.Create(FString.Empty, mapProperty.KeyType!);
+														keySerializer.FromJson(key, reader);
+													}
 													break;
 												case "Value":
-													value = PropertiesSerializer.ReadProperty(reader);
+													{
+														reader.Read();
+														IPropertySerializer keySerializer = PropertiesSerializer.GetSerializer(mapProperty.ValueType!.Name);
+														value = FProperty.Create(FString.Empty, mapProperty.ValueType!);
+														keySerializer.FromJson(value, reader);
+													}
 													break;
 											}
 										}

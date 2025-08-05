@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ namespace UeSaveGame.Json
 				//{ nameof(LazyObjectProperty), new LazyObjectPropertySerializer() },
 				{ nameof(MapProperty), new MapPropertySerializer() },
 				{ nameof(MulticastDelegateProperty), new MulticastDelegatePropertySerializer() },
+				{ nameof(MulticastInlineDelegateProperty), new MulticastInlineDelegatePropertySerializer() },
 				{ nameof(NameProperty), new NamePropertySerializer() },
 				{ nameof(ObjectProperty), new ObjectPropertySerializer() },
 				//{ nameof(RotatorProperty), new RotatorPropertySerializer() },
@@ -69,13 +70,13 @@ namespace UeSaveGame.Json
 		/// </summary>
 		/// <param name="data">The properties to serialize</param>
 		/// <param name="writer">Where to write the serialized data</param>
-		public static void ToJson(IEnumerable<UProperty>? data, JsonWriter writer)
+		public static void ToJson(IEnumerable<FPropertyTag>? data, JsonWriter writer)
 		{
 			writer.WriteStartArray();
 
 			if (data is not null)
 			{
-				foreach (UProperty property in data)
+				foreach (FPropertyTag property in data)
 				{
 					WriteProperty(property, writer);
 				}
@@ -89,9 +90,9 @@ namespace UeSaveGame.Json
 		/// </summary>
 		/// <param name="reader">The reader containing the serialized data</param>
 		/// <returns>The deserialized properties</returns>
-		public static IList<UProperty> FromJson(JsonReader reader)
+		public static IList<FPropertyTag> FromJson(JsonReader reader)
 		{
-			List<UProperty> data = new();
+			List<FPropertyTag> data = new();
 
 			while (reader.Read())
 			{
@@ -102,7 +103,7 @@ namespace UeSaveGame.Json
 
 				if (reader.TokenType == JsonToken.StartObject)
 				{
-					UProperty? property = ReadProperty(reader);
+					FPropertyTag? property = ReadProperty(reader);
 
 					if (property is not null)
 					{
@@ -118,19 +119,22 @@ namespace UeSaveGame.Json
 		/// </summary>
 		/// <param name="property">The property to serialize</param>
 		/// <param name="writer">Where to write the serialized data</param>
-		public static void WriteProperty(UProperty property, JsonWriter writer)
+		public static void WriteProperty(FPropertyTag property, JsonWriter writer)
 		{
 			writer.WriteStartObject();
 
-			writer.WritePropertyName(nameof(UProperty.Name));
+			writer.WritePropertyName(nameof(FPropertyTag.Name));
 			writer.WriteValue(property.Name);
 
-			writer.WritePropertyName(nameof(UProperty.Type));
-			writer.WriteValue(property.Type);
+			writer.WritePropertyName(nameof(FPropertyTag.Type));
+			PropertyTypeNameSerializer.Write(property.Type, writer);
 
-			writer.WritePropertyName(nameof(UProperty.Value));
-			IPropertySerializer serializer = GetSerializer(property.Type);
-			serializer.ToJson(property, writer);
+			writer.WritePropertyName(nameof(FPropertyTag.Flags));
+			writer.WriteValue((byte)property.Flags);
+
+			writer.WritePropertyName(nameof(FProperty.Value));
+			IPropertySerializer serializer = GetSerializer(property.Type.Name);
+			serializer.ToJson(property.Property!, writer);
 
 			writer.WriteEndObject();
 		}
@@ -140,10 +144,11 @@ namespace UeSaveGame.Json
 		/// </summary>
 		/// <param name="reader">The reader containing the serialized data</param>
 		/// <returns>The deserialized property</returns>
-		public static UProperty? ReadProperty(JsonReader reader)
+		public static FPropertyTag? ReadProperty(JsonReader reader)
 		{
 			FString? propertyName = null;
-			FString? propertyType = null;
+			FPropertyTypeName? propertyType = null;
+			EPropertyTagFlags propertyFlags = EPropertyTagFlags.None;
 			JToken? propertyValue = null;
 
 			while (reader.Read())
@@ -157,13 +162,16 @@ namespace UeSaveGame.Json
 				{
 					switch ((string)reader.Value!)
 					{
-						case nameof(UProperty.Name):
+						case nameof(FPropertyTag.Name):
 							propertyName = reader.ReadAsFString();
 							break;
-						case nameof(UProperty.Type):
-							propertyType = reader.ReadAsFString();
+						case nameof(FPropertyTag.Type):
+							propertyType = PropertyTypeNameSerializer.Read(reader);
 							break;
-						case nameof(UProperty.Value):
+						case nameof(FPropertyTag.Flags):
+							propertyFlags = (EPropertyTagFlags)reader.ReadAsInt32()!.Value;
+							break;
+						case nameof(FProperty.Value):
 							if (reader.ReadAndMoveToContent())
 							{
 								propertyValue = JToken.ReadFrom(reader);
@@ -183,22 +191,22 @@ namespace UeSaveGame.Json
 				return null;
 			}
 
-			UProperty property = (UProperty)Activator.CreateInstance(UProperty.ResolveType(propertyType), propertyName, propertyType)!;
+			FPropertyTag property = new(propertyName, propertyType, 0, 0, FProperty.Create(propertyName, propertyType), propertyFlags);
 
 			if (propertyValue is not null)
 			{
 				JsonReader valueReader = propertyValue.CreateReader();
 				if (valueReader.Read())
 				{
-					IPropertySerializer serializer = GetSerializer(property.Type);
-					serializer.FromJson(property, valueReader);
+					IPropertySerializer serializer = GetSerializer(property.Type.Name);
+					serializer.FromJson(property.Property!, valueReader);
 				}
 			}
 
 			return property;
 		}
 
-		private static IPropertySerializer GetSerializer(string typeName)
+		internal static IPropertySerializer GetSerializer(string typeName)
 		{
 			IPropertySerializer? serializer;
 			if (!sSerializerMap.TryGetValue(typeName, out serializer))

@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
 
 namespace UeSaveGame
 {
-    /// <summary>
-    /// Interface for data types usable by UE text properties
-    /// </summary>
+	/// <summary>
+	/// Interface for data types usable by UE text properties
+	/// </summary>
 	public interface ITextData
-    {
-        void Deserialize(BinaryReader reader, PackageVersion packageVersion);
+	{
+		void Deserialize(BinaryReader reader, PackageVersion packageVersion);
 
-        long Serialize(BinaryWriter writer, PackageVersion packageVersion);
-    }
+		int Serialize(BinaryWriter writer, PackageVersion packageVersion);
+	}
 }

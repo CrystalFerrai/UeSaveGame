@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ namespace UeSaveGame.Json.PropertySerializers
 {
 	internal class EnumPropertySerializer : IPropertySerializer
 	{
-		public void ToJson(UProperty property, JsonWriter writer)
+		public void ToJson(FProperty property, JsonWriter writer)
 		{
 			EnumProperty enumProperty = (EnumProperty)property;
 
 			writer.WriteStartObject();
 
 			writer.WritePropertyName(nameof(EnumProperty.EnumType));
-			writer.WriteValue(enumProperty.EnumType?.Value);
+			PropertyTypeNameSerializer.Write(enumProperty.EnumType, writer);
 
 			writer.WritePropertyName(nameof(EnumProperty.Value));
 			writer.WriteValue(enumProperty.Value?.Value);
@@ -34,7 +34,7 @@ namespace UeSaveGame.Json.PropertySerializers
 			writer.WriteEndObject();
 		}
 
-		public void FromJson(UProperty property, JsonReader reader)
+		public void FromJson(FProperty property, JsonReader reader)
 		{
 			EnumProperty enumProperty = (EnumProperty)property;
 
@@ -50,7 +50,7 @@ namespace UeSaveGame.Json.PropertySerializers
 					switch ((string)reader.Value!)
 					{
 						case nameof(EnumProperty.EnumType):
-							enumProperty.EnumType = reader.ReadAsFString();
+							enumProperty.EnumType = PropertyTypeNameSerializer.Read(reader);
 							break;
 						case nameof(EnumProperty.Value):
 							enumProperty.Value = reader.ReadAsFString();

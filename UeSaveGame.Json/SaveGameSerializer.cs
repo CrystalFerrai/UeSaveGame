@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
 // limitations under the License.
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Text;
+using UeSaveGame.Util;
 
 namespace UeSaveGame.Json
 {
@@ -22,6 +26,8 @@ namespace UeSaveGame.Json
 	/// </summary>
 	public class SaveGameSerializer
 	{
+		private static readonly Dictionary<string, Type> sSaveClassSerializerMap;
+
 		private readonly Formatting mFormatting;
 		private readonly int mIndentation;
 		private readonly char mIndentChar;
@@ -29,6 +35,18 @@ namespace UeSaveGame.Json
 
 		private readonly SaveGameHeaderSerializer mHeaderSerializer;
 		private readonly CustomFormatDataSerializer mCustomFormatDataSerializer;
+
+		static SaveGameSerializer()
+		{
+			sSaveClassSerializerMap = new();
+
+			foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				AddSaveClassSerializersFromAssembly(assembly);
+			}
+
+			AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
+		}
 
 		/// <summary>
 		/// Constructor
@@ -64,7 +82,7 @@ namespace UeSaveGame.Json
 		{
 			SaveGame save = SaveGame.LoadFrom(input);
 
-			using StreamWriter sw = new(output, mEncoding);
+			using StreamWriter sw = new(output, mEncoding, leaveOpen: true);
 			using JsonWriter writer = new JsonTextWriter(sw)
 			{
 				AutoCompleteOnClose = true,
@@ -83,10 +101,29 @@ namespace UeSaveGame.Json
 			mCustomFormatDataSerializer.ToJson(save.CustomFormats, writer);
 
 			writer.WritePropertyName(nameof(SaveGame.SaveClass));
-			writer.WriteValue(save.SaveClass?.ToString());
+			writer.WriteValue(save.SaveClass?.Value);
 
-			writer.WritePropertyName(nameof(SaveGame.Properties));
-			PropertiesSerializer.ToJson(save.Properties, writer);
+			ISaveClassSerializer? customSaveClassSerializer = null;
+			if (save.CustomSaveClass is not null && sSaveClassSerializerMap.TryGetValue(save.SaveClass!, out Type? saveClassSerializerType))
+			{
+				customSaveClassSerializer = (ISaveClassSerializer)Activator.CreateInstance(saveClassSerializerType)!;
+				if (customSaveClassSerializer.HasCustomHeader)
+				{
+					writer.WritePropertyName("CustomHeader");
+					customSaveClassSerializer.HeaderToJson(writer, save.CustomSaveClass);
+				}
+			}
+
+			if (customSaveClassSerializer is not null && customSaveClassSerializer.HasCustomData)
+			{
+				writer.WritePropertyName("CustomData");
+				customSaveClassSerializer.DataToJson(writer, save.CustomSaveClass!);
+			}
+			else
+			{
+				writer.WritePropertyName(nameof(SaveGame.Properties));
+				PropertiesSerializer.ToJson(save.Properties, writer);
+			}
 
 			writer.WriteEndObject();
 
@@ -102,11 +139,13 @@ namespace UeSaveGame.Json
 		{
 			SaveGame save = new();
 
-			using StreamReader sr = new(input, mEncoding);
+			using StreamReader sr = new(input, mEncoding, leaveOpen: true);
 			using JsonReader reader = new JsonTextReader(sr)
 			{
 				CloseInput = false
 			};
+
+			JToken? customHeader = null, customData = null;
 
 			while (reader.Read())
 			{
@@ -121,7 +160,19 @@ namespace UeSaveGame.Json
 							save.CustomFormats = mCustomFormatDataSerializer.FromJson(reader);
 							break;
 						case nameof(SaveGame.SaveClass):
-							save.SaveClass = new(reader.ReadAsString()!);
+							save.SetSaveClass(reader.ReadAsFString());
+							break;
+						case "CustomHeader":
+							if (reader.ReadAndMoveToContent())
+							{
+								customHeader = JToken.ReadFrom(reader);
+							}
+							break;
+						case "CustomData":
+							if (reader.ReadAndMoveToContent())
+							{
+								customData = JToken.ReadFrom(reader);
+							}
 							break;
 						case nameof(SaveGame.Properties):
 							save.Properties = PropertiesSerializer.FromJson(reader);
@@ -130,9 +181,49 @@ namespace UeSaveGame.Json
 				}
 			}
 
+			if (save.CustomSaveClass is not null && sSaveClassSerializerMap.TryGetValue(save.SaveClass!, out Type? saveClassSerializerType))
+			{
+				ISaveClassSerializer customSaveClassSerializer = (ISaveClassSerializer)Activator.CreateInstance(saveClassSerializerType)!;
+				if (customSaveClassSerializer.HasCustomHeader && customHeader is not null)
+				{
+					customSaveClassSerializer.HeaderFromJson(customHeader.CreateReader(), save.CustomSaveClass);
+				}
+				if (customSaveClassSerializer.HasCustomData && customData is not null)
+				{
+					customSaveClassSerializer.DataFromJson(customData.CreateReader(), save.CustomSaveClass);
+				}
+			}
+
 			save.WriteTo(output);
 
 			reader.Close();
+		}
+
+		private static void CurrentDomain_AssemblyLoad(object? sender, AssemblyLoadEventArgs args)
+		{
+			AddSaveClassSerializersFromAssembly(args.LoadedAssembly);
+		}
+
+		private static void AddSaveClassSerializersFromAssembly(Assembly assembly)
+		{
+			foreach (Type type in TypeSearcher.FindDerivedTypes(typeof(SaveClassSerializerBase<>), assembly))
+			{
+				Type saveClassType = type.BaseType!.GenericTypeArguments[0];
+
+				IEnumerable<SaveClassPathAttribute> classPathAttributes = saveClassType.GetCustomAttributes<SaveClassPathAttribute>();
+				if (!classPathAttributes.Any())
+				{
+					throw new MissingAttributeException(saveClassType, typeof(SaveClassPathAttribute));
+				}
+
+				foreach (SaveClassPathAttribute classPathAttribute in classPathAttributes)
+				{
+					if (!sSaveClassSerializerMap.TryAdd(classPathAttribute.ClassPath, type))
+					{
+						throw new DuplicateRegistrationException(classPathAttribute.ClassPath, $"Cannot register class '{classPathAttribute.ClassPath}' with type '{type.FullName}' because it is already registered with another type.");
+					}
+				}
+			}
 		}
 	}
 

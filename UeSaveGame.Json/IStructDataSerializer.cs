@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@ using Newtonsoft.Json;
 
 namespace UeSaveGame.Json
 {
-    /// <summary>
-    /// Json serializer for the data of a specialized StructProperty
-    /// </summary>
+	/// <summary>
+	/// Json serializer for the data of a specialized StructProperty
+	/// </summary>
 	/// <remarks>
 	/// Any class that implements this interface will be automatically discoverd by reflection and instantiated.
 	/// Classes implementing this interface must have a default constructor.
 	/// </remarks>
 	public interface IStructDataSerializer
-    {
-        /// <summary>
-        /// Names of struct types this serializer should handle
-        /// </summary>
-        IEnumerable<string> StructTypes { get; }
+	{
+		/// <summary>
+		/// Names of struct types this serializer should handle
+		/// </summary>
+		IEnumerable<string> StructTypes { get; }
 
 		/// <summary>
 		/// Names of properties this serializer should handle.
@@ -51,5 +51,5 @@ namespace UeSaveGame.Json
 		/// <param name="reader">The reader containing the serialized data</param>
 		/// <returns>The deserialized data</returns>
 		IStructData? FromJson(JsonReader reader);
-    }
+	}
 }

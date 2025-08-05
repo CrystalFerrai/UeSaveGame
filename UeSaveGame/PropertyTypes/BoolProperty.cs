@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,37 +14,24 @@
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class BoolProperty : UProperty<bool>
-    {
-        public override bool IsSimpleProperty => true;
+	public class BoolProperty : FProperty<bool>
+	{
+		public override bool IsSimpleProperty => true;
 
-        public BoolProperty(FString name)
-            : this(name, new(nameof(BoolProperty)))
-        {
-        }
+		public BoolProperty(FString name)
+			: base(name)
+		{
+		}
 
-		public BoolProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			Value = reader.ReadByte() != 0;
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            Value = reader.ReadByte() != 0;
-            if (includeHeader)
-            {
-                reader.ReadByte();
-            }
-        }
-
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            writer.Write((byte)(Value ? 1 : 0));
-            if (includeHeader)
-            {
-                writer.Write((byte)0);
-            }
-            return !includeHeader ? 1 : 0;
-        }
-    }
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			writer.Write((byte)(Value ? 1 : 0));
+			return 1;
+		}
+	}
 }

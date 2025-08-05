@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,30 +18,30 @@ using System.Globalization;
 namespace UeSaveGame.DataTypes
 {
 	public struct FDateTime : IFormattable
-    {
-        // FDateTime and System.DateTime use the same underlying Ticks value
-        private DateTime mValue;
+	{
+		// FDateTime and System.DateTime use the same underlying Ticks value
+		private DateTime mValue;
 
-        public DateTime Value
+		public DateTime Value
 		{
 			readonly get => mValue;
-            set => mValue = value;
+			set => mValue = value;
 		}
 
-        public long Ticks
+		public long Ticks
 		{
-            readonly get => mValue.Ticks;
-            set => mValue = new DateTime(value);
+			readonly get => mValue.Ticks;
+			set => mValue = new DateTime(value);
 		}
 
-        public FDateTime(DateTime value)
+		public FDateTime(DateTime value)
 		{
-            mValue = value;
+			mValue = value;
 		}
 
-        public FDateTime(long ticks)
+		public FDateTime(long ticks)
 		{
-            mValue = new DateTime(ticks);
+			mValue = new DateTime(ticks);
 		}
 
 		public static bool TryParse([NotNullWhen(true)] string? s, out FDateTime result)
@@ -83,23 +83,23 @@ namespace UeSaveGame.DataTypes
 		}
 
 		public override readonly string ToString()
-        {
-            return mValue.ToString();
-        }
-
-        public readonly string ToString(string? format)
-        {
-            return mValue.ToString(format);
-        }
-
-        public readonly string ToString(IFormatProvider? formatProvider)
-        {
-            return mValue.ToString(formatProvider);
-        }
-
-        public readonly string ToString(string? format, IFormatProvider? formatProvider)
 		{
-            return mValue.ToString(format, formatProvider);
+			return mValue.ToString();
+		}
+
+		public readonly string ToString(string? format)
+		{
+			return mValue.ToString(format);
+		}
+
+		public readonly string ToString(IFormatProvider? formatProvider)
+		{
+			return mValue.ToString(formatProvider);
+		}
+
+		public readonly string ToString(string? format, IFormatProvider? formatProvider)
+		{
+			return mValue.ToString(format, formatProvider);
 		}
 	}
 }

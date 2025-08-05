@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,45 +20,56 @@ namespace UeSaveGame.Json.PropertySerializers
 {
 	internal class ArrayPropertySerializer : IPropertySerializer
 	{
-		public void ToJson(UProperty property, JsonWriter writer)
+		public void ToJson(FProperty property, JsonWriter writer)
 		{
 			ArrayProperty arrayProperty = (ArrayProperty)property;
 
 			writer.WriteStartObject();
 
 			writer.WritePropertyName(nameof(ArrayProperty.ItemType));
-			writer.WriteFStringValue(arrayProperty.ItemType);
+			PropertyTypeNameSerializer.Write(arrayProperty.ItemType!, writer);
 
 			writer.WritePropertyName(nameof(ArrayProperty.StructPrototype));
-			if (arrayProperty.ItemType == nameof(StructProperty))
+			if (arrayProperty.ItemType!.Name == nameof(StructProperty) && arrayProperty.StructPrototype is not null)
 			{
-				if (arrayProperty.StructPrototype is null) throw new InvalidDataException("Array property has struct data but is missing a struct prototype.");
+				StructProperty structProperty = (StructProperty)arrayProperty.StructPrototype.Property!;
 
 				writer.WriteStartObject();
 
-				writer.WritePropertyName(nameof(StructProperty.Name));
+				writer.WritePropertyName(nameof(FPropertyTag.Name));
 				writer.WriteFStringValue(arrayProperty.StructPrototype.Name);
 
-				writer.WritePropertyName(nameof(StructProperty.Type));
-				writer.WriteFStringValue(arrayProperty.StructPrototype.Type);
+				writer.WritePropertyName(nameof(FPropertyTag.Type));
+				PropertyTypeNameSerializer.Write(arrayProperty.StructPrototype.Type, writer);
+
+				writer.WritePropertyName(nameof(FPropertyTag.Flags));
+				writer.WriteValue((byte)arrayProperty.StructPrototype.Flags);
 
 				writer.WritePropertyName(nameof(StructProperty.StructType));
-				writer.WriteFStringValue(arrayProperty.StructPrototype.StructType);
+				PropertyTypeNameSerializer.Write(structProperty.StructType!, writer);
 
 				writer.WritePropertyName(nameof(StructProperty.StructGuid));
-				writer.WriteValue(arrayProperty.StructPrototype.StructGuid.ToString("D"));
+				writer.WriteValue(structProperty.StructGuid.ToString("D"));
 
 				writer.WriteEndObject();
 			}
-            else
-            {
-                writer.WriteNull();
-            }
+			else
+			{
+				writer.WriteNull();
+			}
 
 			writer.WritePropertyName("Items");
-			if (arrayProperty.Value is IEnumerable<UProperty> uprops)
+			if (arrayProperty.Value is IEnumerable<FProperty> props)
 			{
-				PropertiesSerializer.ToJson(uprops, writer);
+				writer.WriteStartArray();
+
+				IPropertySerializer serializer = PropertiesSerializer.GetSerializer(arrayProperty.ItemType.Name);
+				foreach (FProperty item in props)
+				{
+					serializer.ToJson(item, writer);
+				}
+
+				writer.WriteEndArray();
 			}
 			else
 			{
@@ -85,7 +96,7 @@ namespace UeSaveGame.Json.PropertySerializers
 			writer.WriteEndObject();
 		}
 
-		public void FromJson(UProperty property, JsonReader reader)
+		public void FromJson(FProperty property, JsonReader reader)
 		{
 			ArrayProperty arrayProperty = (ArrayProperty)property;
 
@@ -103,7 +114,7 @@ namespace UeSaveGame.Json.PropertySerializers
 					switch ((string)reader.Value!)
 					{
 						case nameof(ArrayProperty.ItemType):
-							arrayProperty.ItemType = reader.ReadAsFString();
+							arrayProperty.ItemType = PropertyTypeNameSerializer.Read(reader);
 							break;
 						case nameof(ArrayProperty.StructPrototype):
 							reader.ReadAndMoveToContent();
@@ -113,7 +124,9 @@ namespace UeSaveGame.Json.PropertySerializers
 							}
 							else
 							{
-								FString? name = null, type = null, structType = null;
+								FString? name = null;
+								FPropertyTypeName? type = null, structType = null;
+								EPropertyTagFlags flags = EPropertyTagFlags.None;
 								Guid structGuid = Guid.Empty;
 								while (reader.Read())
 								{
@@ -126,14 +139,17 @@ namespace UeSaveGame.Json.PropertySerializers
 									{
 										switch ((string)reader.Value!)
 										{
-											case nameof(StructProperty.Name):
+											case nameof(FPropertyTag.Name):
 												name = reader.ReadAsFString();
 												break;
-											case nameof(StructProperty.Type):
-												type = reader.ReadAsFString();
+											case nameof(FPropertyTag.Type):
+												type = PropertyTypeNameSerializer.Read(reader);
+												break;
+											case nameof(FPropertyTag.Flags):
+												flags = (EPropertyTagFlags)reader.ReadAsInt32()!.Value;
 												break;
 											case nameof(StructProperty.StructType):
-												structType = reader.ReadAsFString();
+												structType = PropertyTypeNameSerializer.Read(reader);
 												break;
 											case nameof(StructProperty.StructGuid):
 												structGuid = Guid.Parse(reader.ReadAsString()!);
@@ -154,11 +170,13 @@ namespace UeSaveGame.Json.PropertySerializers
 									throw new InvalidDataException("Array property struct prototype is missing information");
 								}
 
-								arrayProperty.StructPrototype = new(name, type)
-								{
-									StructType = structType,
-									StructGuid = structGuid
-								};
+								arrayProperty.StructPrototype = new(name, type, 0, 0,
+									new StructProperty(name)
+									{
+										StructType = structType,
+										StructGuid = structGuid
+									},
+									EPropertyTagFlags.None);
 							}
 							break;
 						case "Items":
@@ -183,14 +201,11 @@ namespace UeSaveGame.Json.PropertySerializers
 					throw new InvalidDataException("Array property value is not an array");
 				}
 
-				JsonReader valueReader = valueToken.CreateReader();
-
-				Type propType = UProperty.ResolveType(arrayProperty.ItemType);
-				UProperty prototype = ((UProperty?)Activator.CreateInstance(propType, FString.Empty, arrayProperty.ItemType)) ?? throw new InvalidDataException($"Invalid array item type {arrayProperty.ItemType}");
+				FProperty prototype = FProperty.Create(FString.Empty, arrayProperty.ItemType) ?? throw new InvalidDataException($"Invalid array item type {arrayProperty.ItemType}");
 
 				if (prototype.IsSimpleProperty)
 				{
-					if (prototype.SimpleValueType == typeof(FString))
+					if (prototype.SimpleValueType == typeof(FString) || prototype is ByteProperty && arrayToken.First is JValue jv && jv.Value is string)
 					{
 						string[]? value = arrayToken.ToObject<string[]>();
 						if (value is not null)
@@ -205,7 +220,27 @@ namespace UeSaveGame.Json.PropertySerializers
 				}
 				else
 				{
-					arrayProperty.Value = PropertiesSerializer.FromJson(valueReader)?.ToArray();
+					List<FProperty> itemList = new();
+
+					IPropertySerializer serializer = PropertiesSerializer.GetSerializer(arrayProperty.ItemType.Name);
+
+					JsonReader valueReader = valueToken.CreateReader();
+					while (valueReader.Read())
+					{
+						if (valueReader.TokenType == JsonToken.EndArray)
+						{
+							break;
+						}
+
+						if (valueReader.TokenType == JsonToken.StartObject)
+						{
+							FProperty item = FProperty.Create(FString.Empty, arrayProperty.ItemType);
+							serializer.FromJson(item, valueReader);
+							itemList.Add(item);
+						}
+					}
+
+					arrayProperty.Value = itemList.ToArray();
 				}
 			}
 		}

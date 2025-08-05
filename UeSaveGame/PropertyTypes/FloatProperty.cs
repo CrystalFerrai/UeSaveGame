@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,34 +14,24 @@
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class FloatProperty : UProperty<float>
-    {
-        protected override long ContentSize => 4;
+	public class FloatProperty : FProperty<float>
+	{
+		public override bool IsSimpleProperty => true;
 
-        public override bool IsSimpleProperty => true;
+		public FloatProperty(FString name)
+			: base(name)
+		{
+		}
 
-        public FloatProperty(FString name)
-            : this(name, new(nameof(FloatProperty)))
-        {
-        }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			Value = reader.ReadSingle();
+		}
 
-        public FloatProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
-
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader) reader.ReadByte();
-            Value = reader.ReadSingle();
-        }
-
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader) writer.Write((byte)0);
-            writer.Write(Value);
-
-            return ContentSize;
-        }
-    }
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			writer.Write(Value);
+			return 4;
+		}
+	}
 }

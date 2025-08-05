@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,23 +19,23 @@ namespace UeSaveGame.StructData
 	public class VectorStruct : BaseStructData
 	{
 		public override IEnumerable<string> StructTypes
-        {
-            get
-            {
-                yield return "Vector";
-                yield return "Rotator";
-            }
-        }
+		{
+			get
+			{
+				yield return "Vector";
+				yield return "Rotator";
+			}
+		}
 
-        public FVector Value { get; set; }
+		public FVector Value { get; set; }
 
 		public VectorStruct()
 		{
 		}
 
-        public override void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion)
-        {
-            FVector v;
+		public override void Deserialize(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			FVector v;
 
 			if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
 			{
@@ -50,10 +50,10 @@ namespace UeSaveGame.StructData
 				v.Z = reader.ReadSingle();
 			}
 
-            Value = v;
-        }
+			Value = v;
+		}
 
-        public override long Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		public override int Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			if (packageVersion >= EObjectUE5Version.LARGE_WORLD_COORDINATES)
 			{
@@ -71,9 +71,9 @@ namespace UeSaveGame.StructData
 			return 12;
 		}
 
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
-    }
+		public override string ToString()
+		{
+			return Value.ToString();
+		}
+	}
 }

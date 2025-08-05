@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,14 +39,14 @@ namespace UeSaveGame.Json.PropertySerializers
 			AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
 		}
 
-		public void ToJson(UProperty property, JsonWriter writer)
+		public void ToJson(FProperty property, JsonWriter writer)
 		{
 			StructProperty structProperty = (StructProperty)property;
 
 			writer.WriteStartObject();
 
 			writer.WritePropertyName(nameof(StructProperty.StructType));
-			writer.WriteFStringValue(structProperty.StructType);
+			PropertyTypeNameSerializer.Write(structProperty.StructType, writer);
 
 			writer.WritePropertyName(nameof(StructProperty.StructGuid));
 			writer.WriteValue(structProperty.StructGuid.ToString("D"));
@@ -55,8 +55,8 @@ namespace UeSaveGame.Json.PropertySerializers
 			IStructDataSerializer? dataSerializer;
 			if (structProperty.StructType is not null &&
 				(
-				sTypeMap.TryGetValue(structProperty.StructType!, out dataSerializer) ||
-				sNameMap.TryGetValue(structProperty.StructType!, out dataSerializer))
+				sTypeMap.TryGetValue(structProperty.StructType!.Name, out dataSerializer) ||
+				sNameMap.TryGetValue(structProperty.StructType!.Name, out dataSerializer))
 				)
 			{
 				dataSerializer.ToJson(structProperty.Value, writer);
@@ -74,7 +74,7 @@ namespace UeSaveGame.Json.PropertySerializers
 			writer.WriteEndObject();
 		}
 
-		public void FromJson(UProperty property, JsonReader reader)
+		public void FromJson(FProperty property, JsonReader reader)
 		{
 			StructProperty structProperty = (StructProperty)property;
 
@@ -92,7 +92,7 @@ namespace UeSaveGame.Json.PropertySerializers
 					switch ((string)reader.Value!)
 					{
 						case nameof(StructProperty.StructType):
-							structProperty.StructType = reader.ReadAsFString();
+							structProperty.StructType = PropertyTypeNameSerializer.Read(reader);
 							break;
 						case nameof(StructProperty.StructGuid):
 							structProperty.StructGuid = Guid.Parse(reader.ReadAsString()!);
@@ -115,8 +115,8 @@ namespace UeSaveGame.Json.PropertySerializers
 					IStructDataSerializer? dataSerializer;
 					if (structProperty.StructType is not null &&
 						(
-						sTypeMap.TryGetValue(structProperty.StructType!, out dataSerializer) ||
-						sNameMap.TryGetValue(structProperty.StructType!, out dataSerializer))
+						sTypeMap.TryGetValue(structProperty.StructType!.Name, out dataSerializer) ||
+						sNameMap.TryGetValue(structProperty.StructType!.Name, out dataSerializer))
 						)
 					{
 						structProperty.Value = dataSerializer.FromJson(valueReader);

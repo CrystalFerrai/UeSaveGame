@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,34 +17,34 @@ using UeSaveGame.DataTypes;
 namespace UeSaveGame.StructData
 {
 	public class DateTimeStruct : BaseStructData
-    {
-        public FDateTime DateTime { get; set; }
+	{
+		public FDateTime DateTime { get; set; }
 
-        public override IEnumerable<string> StructTypes
-        {
-            get
-            {
-                yield return "DateTime";
-            }
-        }
+		public override IEnumerable<string> StructTypes
+		{
+			get
+			{
+				yield return "DateTime";
+			}
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion)
-        {
-            FDateTime dateTime = new FDateTime();
-            dateTime.Ticks = reader.ReadInt64();
-            DateTime = dateTime;
-        }
+		public override void Deserialize(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			FDateTime dateTime = new FDateTime();
+			dateTime.Ticks = reader.ReadInt64();
+			DateTime = dateTime;
+		}
 
-        public override long Serialize(BinaryWriter writer, PackageVersion packageVersion)
-        {
-            writer.Write(DateTime.Ticks);
+		public override int Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			writer.Write(DateTime.Ticks);
 
-            return 8;
-        }
+			return 8;
+		}
 
-        public override string ToString()
-        {
-            return DateTime.ToString();
-        }
-    }
+		public override string ToString()
+		{
+			return DateTime.ToString();
+		}
+	}
 }

@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,43 +17,43 @@ using UeSaveGame.Util;
 namespace UeSaveGame.StructData
 {
 	public class PropertiesStruct : BaseStructData
-    {
-        public override IEnumerable<string> StructTypes
-        {
-            get
-            {
-                yield break;
-            }
-        }
+	{
+		public override IEnumerable<string> StructTypes
+		{
+			get
+			{
+				yield break;
+			}
+		}
 
-        public IList<UProperty> Properties { get; set; }
+		public IList<FPropertyTag> Properties { get; set; }
 
-        public PropertiesStruct()
-        {
-            Properties = new List<UProperty>();
-        }
+		public PropertiesStruct()
+		{
+			Properties = new List<FPropertyTag>();
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion)
-        {
-            Properties = new List<UProperty>(PropertySerializationHelper.ReadProperties(reader, packageVersion, false));
-        }
+		public override void Deserialize(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			Properties = new List<FPropertyTag>(PropertySerializationHelper.ReadProperties(reader, packageVersion, false));
+		}
 
-        public override long Serialize(BinaryWriter writer, PackageVersion packageVersion)
-        {
-            long startPosition = writer.BaseStream.Position;
+		public override int Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			long startPosition = writer.BaseStream.Position;
 
-            PropertySerializationHelper.WriteProperties(Properties, writer, packageVersion, false);
+			PropertySerializationHelper.WriteProperties(Properties, writer, packageVersion, false);
 
-            return writer.BaseStream.Position - startPosition;
-        }
+			return (int)(writer.BaseStream.Position - startPosition);
+		}
 
-        public override string ToString()
-        {
-            if (Properties.Count == 1)
-            {
-                return Properties[0].ToString();
-            }
-            return $"{Properties.Count} Properties";
-        }
-    }
+		public override string? ToString()
+		{
+			if (Properties.Count == 1)
+			{
+				return Properties[0].ToString();
+			}
+			return $"{Properties.Count} Properties";
+		}
+	}
 }

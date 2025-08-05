@@ -53,7 +53,7 @@ namespace UeSaveGame.DataTypes
 			Value?.Deserialize(reader, version);
 		}
 
-		public long Serialize(BinaryWriter writer, PackageVersion version)
+		public int Serialize(BinaryWriter writer, PackageVersion version)
 		{
 			writer.Write((int)Flags);
 			writer.Write((sbyte)HistoryType);

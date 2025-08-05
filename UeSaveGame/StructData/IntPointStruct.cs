@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,36 +17,36 @@ using UeSaveGame.DataTypes;
 namespace UeSaveGame.StructData
 {
 	public class IntPointStruct : BaseStructData
-    {
-        public FIntPoint Value { get; set; }
+	{
+		public FIntPoint Value { get; set; }
 
-        public override IEnumerable<string> StructTypes
-        {
-            get
-            {
-                yield return "IntPoint";
-            }
-        }
+		public override IEnumerable<string> StructTypes
+		{
+			get
+			{
+				yield return "IntPoint";
+			}
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion)
-        {
-            FIntPoint value = new();
-            value.X = reader.ReadInt32();
-            value.Y = reader.ReadInt32();
-            Value = value;
-        }
+		public override void Deserialize(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			FIntPoint value = new();
+			value.X = reader.ReadInt32();
+			value.Y = reader.ReadInt32();
+			Value = value;
+		}
 
-        public override long Serialize(BinaryWriter writer, PackageVersion packageVersion)
-        {
-            writer.Write(Value.X);
-            writer.Write(Value.Y);
+		public override int Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			writer.Write(Value.X);
+			writer.Write(Value.Y);
 
-            return 8;
-        }
+			return 8;
+		}
 
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
-    }
+		public override string ToString()
+		{
+			return Value.ToString();
+		}
+	}
 }

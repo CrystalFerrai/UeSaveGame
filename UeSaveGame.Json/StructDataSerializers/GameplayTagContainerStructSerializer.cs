@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ namespace UeSaveGame.Json.StructDataSerializers
 
 								if (reader.TokenType == JsonToken.String)
 								{
-									gameplayTagContainerStruct.Tags.Add(reader.ReadAsFString());
+									gameplayTagContainerStruct.Tags.Add(new((string)reader.Value));
 								}
 							}
 							break;

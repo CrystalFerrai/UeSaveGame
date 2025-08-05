@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,34 +16,24 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class StrProperty : UProperty<FString>
-    {
-        protected override long ContentSize => Value == null ? 4 : 4 + Value.SizeInBytes;
-
-        public override bool IsSimpleProperty => true;
+	public class StrProperty : FProperty<FString>
+	{
+		public override bool IsSimpleProperty => true;
 
 		public StrProperty(FString name)
-			: this(name, new(nameof(StrProperty)))
+			: base(name)
 		{
 		}
 
-		public StrProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			Value = reader.ReadUnrealString();
+		}
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader) reader.ReadByte();
-            Value = reader.ReadUnrealString();
-        }
-
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader) writer.Write((byte)0);
-            writer.WriteUnrealString(Value);
-
-            return ContentSize;
-        }
-    }
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			writer.WriteUnrealString(Value);
+			return Value == null ? 4 : 4 + Value.SizeInBytes;
+		}
+	}
 }

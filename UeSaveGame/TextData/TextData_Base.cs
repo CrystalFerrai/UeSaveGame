@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ namespace UeSaveGame.TextData
 			SourceString = reader.ReadUnrealString();
 		}
 
-		public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		public int Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			writer.WriteUnrealString(Namespace);
 			writer.WriteUnrealString(Key);

@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,26 +14,26 @@
 
 namespace UeSaveGame.DataTypes
 {
-    public struct FQuat
-    {
-        public static readonly FQuat Identity;
+	public struct FQuat
+	{
+		public static readonly FQuat Identity;
 
-        public double X;
-        public double Y;
-        public double Z;
-        public double W;
+		public double X;
+		public double Y;
+		public double Z;
+		public double W;
 
-        static FQuat()
-        {
-            Identity.X = 0.0;
-            Identity.Y = 0.0;
-            Identity.Z = 0.0;
-            Identity.W = 1.0;
-        }
+		static FQuat()
+		{
+			Identity.X = 0.0;
+			Identity.Y = 0.0;
+			Identity.Z = 0.0;
+			Identity.W = 1.0;
+		}
 
-        public override string ToString()
-        {
-            return $"{X} {Y} {Z} {W}";
-        }
-    }
+		public override string ToString()
+		{
+			return $"{X} {Y} {Z} {W}";
+		}
+	}
 }

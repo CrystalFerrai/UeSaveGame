@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,72 +17,55 @@ using UeSaveGame.Util;
 namespace UeSaveGame.PropertyTypes
 {
 	public class SetProperty : ArrayProperty
-    {
-        private int mRemovedCount;
+	{
+		private int mRemovedCount;
 
 		public SetProperty(FString name)
-			: this(name, new(nameof(SetProperty)))
+			: base(name)
 		{
 		}
 
-		public SetProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			if (ItemType == null) throw new InvalidOperationException("Cannot read set with unknown item type");
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader)
-            {
-                ItemType = reader.ReadUnrealString();
-                reader.ReadByte();
-            }
+			mRemovedCount = reader.ReadInt32();
+			if (mRemovedCount != 0)
+			{
+				// Sets can store items to be removed as well as items to be added. Have not encountered the removed case yet.
+				throw new NotImplementedException();
+			}
 
-            if (ItemType == null) throw new InvalidOperationException("Cannot read set with unknown item type");
+			int count = reader.ReadInt32();
 
-            mRemovedCount = reader.ReadInt32();
-            if (mRemovedCount != 0)
-            {
-                // Sets can store items to be removed as well as items to be added. Have not encountered the removed case yet.
-                throw new NotImplementedException();
-            }
+			Array? data;
+			StructPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 8, ItemType, packageVersion, out data);
+			Value = data;
+		}
 
-            int count = reader.ReadInt32();
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
+			if (ItemType == null) throw new InvalidOperationException("Cannot serialize set with unknown item type");
 
-            Array? data;
-            StructPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 8, ItemType, packageVersion, includeHeader, out data);
-            Value = data;
-        }
+			int size = 4;
+			writer.Write(mRemovedCount);
+			if (mRemovedCount != 0)
+			{
+				throw new NotImplementedException();
+			}
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
-            if (ItemType == null) throw new InvalidOperationException("Cannot serialize set with unknown item type");
+			size += 4;
+			writer.Write(Value.Length);
 
-            if (includeHeader)
-            {
-                writer.WriteUnrealString(ItemType);
-                writer.Write((byte)0);
-            }
+			size += ArraySerializationHelper.Serialize(writer, ItemType, packageVersion, StructPrototype, Value);
 
-            long size = 4;
-            writer.Write(mRemovedCount);
-            if (mRemovedCount != 0)
-            {
-                throw new NotImplementedException();
-            }
+			return size;
+		}
 
-            size += 4;
-            writer.Write(Value.Length);
-
-            size += ArraySerializationHelper.Serialize(writer, ItemType, packageVersion, includeHeader, StructPrototype, Value);
-
-            return size;
-        }
-
-        public override string ToString()
-        {
-            return Value == null ? base.ToString() : $"{Name} [{nameof(SetProperty)}<{ItemType}>] Count = {Value.Length}";
-        }
-    }
+		public override string? ToString()
+		{
+			return Value == null ? base.ToString() : $"<{ItemType}> Count = {Value.Length}";
+		}
+	}
 }

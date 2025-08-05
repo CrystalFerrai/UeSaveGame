@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -244,7 +244,7 @@ namespace UeSaveGame
 
 		public static bool operator >=(PackageVersion a, uint b)
 		{
-			return a.Version >=	b;
+			return a.Version >= b;
 		}
 
 		public static bool operator >=(uint a, PackageVersion b)
@@ -283,19 +283,19 @@ namespace UeSaveGame
 
 		// Added data to identify references from and to optional package
 		OPTIONAL_RESOURCES,
-	
+
 		// Large world coordinates converts a number of core types to double components by default.
-		LARGE_WORLD_COORDINATES,       
+		LARGE_WORLD_COORDINATES,
 
 		// Remove package GUID from FObjectExport
 		REMOVE_OBJECT_EXPORT_PACKAGE_GUID,
 
 		// Add IsInherited to the FObjectExport entry
 		TRACK_OBJECT_EXPORT_IS_INHERITED,
-	
+
 		// Replace FName asset path in FSoftObjectPath with (package name, asset name) pair FTopLevelAssetPath
 		FSOFTOBJECTPATH_REMOVE_ASSET_PATH_FNAMES,
-	
+
 
 		// Add a soft object path list to the package summary for fast remap
 		ADD_SOFTOBJECTPATH_LIST,
@@ -402,7 +402,7 @@ namespace UeSaveGame
 		// Remove LevelBodySetup from ULevel
 		VER_UE4_REMOVE_LEVELBODYSETUP,
 		// Refactor character crouching
-		VER_UE4_REFACTOR_CHARACTER_CROUCH,	
+		VER_UE4_REFACTOR_CHARACTER_CROUCH,
 		// Trimmed down material shader debug information.
 		VER_UE4_SMALLER_DEBUG_MATERIALSHADER_UNIFORM_EXPRESSIONS,
 		// APEX Clothing
@@ -488,7 +488,7 @@ namespace UeSaveGame
 		// Remove native component nodes from the blueprint SimpleConstructionScript
 		VER_UE4_REMOVE_NATIVE_COMPONENTS_FROM_BLUEPRINT_SCS,
 		// Removal of Single Node Instance
-		VER_UE4_REMOVE_SINGLENODEINSTANCE, 
+		VER_UE4_REMOVE_SINGLENODEINSTANCE,
 		// Character movement braking changes
 		VER_UE4_CHARACTER_BRAKING_REFACTOR,
 		// Supported low quality lightmaps in volume samples
@@ -516,9 +516,9 @@ namespace UeSaveGame
 		// Allow overriding of parent class input bindings
 		VER_UE4_BLUEPRINT_INPUT_BINDING_OVERRIDES,
 		// Fix up convex invalid transform
-		VER_UE4_FIXUP_BODYSETUP_INVALID_CONVEX_TRANSFORM, 
+		VER_UE4_FIXUP_BODYSETUP_INVALID_CONVEX_TRANSFORM,
 		// Fix up scale of physics stiffness and damping value
-		VER_UE4_FIXUP_STIFFNESS_AND_DAMPING_SCALE, 
+		VER_UE4_FIXUP_STIFFNESS_AND_DAMPING_SCALE,
 		// Convert USkeleton and FBoneContrainer to using FReferenceSkeleton.
 		VER_UE4_REFERENCE_SKELETON_REFACTOR,
 		// Adding references to variable, function, and macro nodes to be able to update to renamed values
@@ -607,7 +607,7 @@ namespace UeSaveGame
 		// Undo BreakMaterialAttributes changes as it broke old content
 		VER_UE4_UNDO_BREAK_MATERIALATTRIBUTES_CHANGE,
 		// Now Default custom profile name isn't NONE anymore due to copy/paste not working properly with it
-		VER_UE4_ADD_CUSTOMPROFILENAME_CHANGE, 
+		VER_UE4_ADD_CUSTOMPROFILENAME_CHANGE,
 		// Permanently flip and scale material expression coordinates
 		VER_UE4_FLIP_MATERIAL_COORDS,
 		// PinSubCategoryMemberReference added to FEdGraphPinType
@@ -902,7 +902,7 @@ namespace UeSaveGame
 		// Updating custom material expression nodes for instanced stereo implementation
 		VER_UE4_INSTANCED_STEREO_UNIFORM_UPDATE,
 		// Texture streaming min and max distance to handle HLOD
-		VER_UE4_STREAMABLE_TEXTURE_MIN_MAX_DISTANCE,	
+		VER_UE4_STREAMABLE_TEXTURE_MIN_MAX_DISTANCE,
 		// Fixing up invalid struct-to-struct pin connections by injecting available conversion nodes
 		VER_UE4_INJECT_BLUEPRINT_STRUCT_PIN_CONVERSION_NODES,
 		// Saving tag data for Array Property's inner property

@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,24 +14,24 @@
 
 namespace UeSaveGame.DataTypes
 {
-    public struct FVector
-    {
-        public static readonly FVector Zero;
-        public static readonly FVector One;
+	public struct FVector
+	{
+		public static readonly FVector Zero;
+		public static readonly FVector One;
 
-        public double X;
-        public double Y;
-        public double Z;
+		public double X;
+		public double Y;
+		public double Z;
 
-        static FVector()
-        {
-            Zero = new() { X = 0.0, Y = 0.0, Z = 0.0 };
-            One = new() { X = 1.0, Y = 1.0, Z = 1.0 };
-        }
+		static FVector()
+		{
+			Zero = new() { X = 0.0, Y = 0.0, Z = 0.0 };
+			One = new() { X = 1.0, Y = 1.0, Z = 1.0 };
+		}
 
-        public override string ToString()
-        {
-            return $"{X} {Y} {Z}";
-        }
-    }
+		public override string ToString()
+		{
+			return $"{X} {Y} {Z}";
+		}
+	}
 }

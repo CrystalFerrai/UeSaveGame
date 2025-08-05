@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 namespace UeSaveGame
 {
 	public abstract class BaseStructData : IStructData
-    {
-        public virtual ISet<string>? KnownPropertyNames => null;
+	{
+		public virtual ISet<string>? KnownPropertyNames => null;
 
-        public abstract IEnumerable<string> StructTypes { get; }
+		public abstract IEnumerable<string> StructTypes { get; }
 
-        public abstract void Deserialize(BinaryReader reader, long size, PackageVersion packageVersion);
+		public abstract void Deserialize(BinaryReader reader, int size, PackageVersion packageVersion);
 
-        public abstract long Serialize(BinaryWriter writer, PackageVersion packageVersion);
-    }
+		public abstract int Serialize(BinaryWriter writer, PackageVersion packageVersion);
+	}
 }

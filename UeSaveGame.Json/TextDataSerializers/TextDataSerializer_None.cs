@@ -1,4 +1,4 @@
-﻿// Copyright 2024 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UeSaveGame.TextData;
 
 namespace UeSaveGame.Json.TextDataSerializers
@@ -30,39 +31,20 @@ namespace UeSaveGame.Json.TextDataSerializers
 			if (data is not TextData_None) throw new ArgumentException($"{nameof(TextDataSerializer_None)} does not support data type {data.GetType().Name}", nameof(data));
 
 			TextData_None textData = (TextData_None)data;
-
-			writer.WriteStartArray();
-
-			if (textData.Values is not null)
-			{
-				foreach (FString? value in textData.Values)
-				{
-					writer.WriteFStringValue(value);
-				}
-			}
-
-			writer.WriteEndArray();
+			writer.WriteFStringValue(textData.Value);
 		}
 
 		public ITextData? FromJson(JsonReader reader)
 		{
 			TextData_None textData = new();
-			List<FString?> values = new();
-
-			while (reader.Read())
+			if (reader.Value is string sv)
 			{
-				if (reader.TokenType == JsonToken.EndArray)
-				{
-					break;
-				}
-
-				if (reader.TokenType == JsonToken.String)
-				{
-					values.Add(reader.ReadAsFString());
-				}
+				textData.Value = new(sv);
 			}
-
-			textData.Values = values.ToArray();
+			else
+			{
+				textData.Value = reader.ReadAsFString();
+			}
 			return textData;
 		}
 	}

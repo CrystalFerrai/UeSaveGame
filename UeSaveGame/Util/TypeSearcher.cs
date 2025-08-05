@@ -56,7 +56,12 @@ namespace UeSaveGame.Util
 				{
 					for (Type? current = type; current is not null; current = current.BaseType)
 					{
-						if (current == baseType)
+						Type check = current;
+						if (check.IsGenericType)
+						{
+							check = check.GetGenericTypeDefinition();
+						}
+						if (check == baseType)
 						{
 							yield return type;
 							break;

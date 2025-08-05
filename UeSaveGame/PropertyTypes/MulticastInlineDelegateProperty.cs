@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,54 +17,39 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class MulticastInlineDelegateProperty : UProperty<UDelegate[]>
+	public class MulticastInlineDelegateProperty : FProperty<UDelegate[]>
 	{
 		public MulticastInlineDelegateProperty(FString name)
-			: this(name, new(nameof(MulticastInlineDelegateProperty)))
+			: base(name)
 		{
 		}
 
-		public MulticastInlineDelegateProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion engineVersion)
+		{
+			int count = reader.ReadInt32();
+			Value = new UDelegate[count];
 
-        public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion engineVersion)
-        {
-            if (includeHeader)
-            {
-                reader.ReadByte();
-            }
+			for (int i = 0; i < count; ++i)
+			{
+				Value[i].ClassName = reader.ReadUnrealString();
+				Value[i].FunctionName = reader.ReadUnrealString();
+			}
+		}
 
-            int count = reader.ReadInt32();
-            Value = new UDelegate[count];
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion engineVersion)
+		{
+			if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
 
-            for (int i = 0; i < count; ++i)
-            {
-                Value[i].ClassName = reader.ReadUnrealString();
-                Value[i].FunctionName = reader.ReadUnrealString();
-            }
-        }
+			long startPosition = writer.BaseStream.Position;
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion engineVersion)
-        {
-            if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
+			writer.Write(Value.Length);
+			foreach (UDelegate dlgt in Value)
+			{
+				writer.WriteUnrealString(dlgt.ClassName);
+				writer.WriteUnrealString(dlgt.FunctionName);
+			}
 
-            if (includeHeader)
-            {
-                writer.Write((byte)0);
-            }
-
-            long startPosition = writer.BaseStream.Position;
-
-            writer.Write(Value.Length);
-            foreach (UDelegate dlgt in Value)
-            {
-                writer.WriteUnrealString(dlgt.ClassName);
-                writer.WriteUnrealString(dlgt.FunctionName);
-            }
-
-            return writer.BaseStream.Position - startPosition;
-        }
-    }
+			return (int)(writer.BaseStream.Position - startPosition);
+		}
+	}
 }

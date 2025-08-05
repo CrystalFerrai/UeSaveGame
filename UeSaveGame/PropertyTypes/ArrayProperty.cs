@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,68 +16,79 @@ using UeSaveGame.Util;
 
 namespace UeSaveGame.PropertyTypes
 {
-	public class ArrayProperty : UProperty<Array>
-    {
-        internal StructProperty? StructPrototype { get; set; }
+	public class ArrayProperty : FProperty<Array>
+	{
+		internal FPropertyTag? StructPrototype { get; set; }
 
-        public FString? ItemType { get; set; }
+		public FPropertyTypeName? ItemType { get; set; }
 
-        public ArrayProperty(FString name)
-            : this(name, new(nameof(ArrayProperty)))
-        {
-        }
-
-        public ArrayProperty(FString name, FString type)
-            : base(name, type)
-        {
-        }
-
-		public ArrayProperty(FString name, FString type, FString itemType)
-			: this(name, type)
+		public ArrayProperty(FString name)
+			: base(name)
 		{
-            ItemType = itemType;
 		}
 
-		public override void Deserialize(BinaryReader reader, long size, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (includeHeader)
-            {
-                ItemType = reader.ReadUnrealString();
-                reader.ReadByte();
-            }
+		public ArrayProperty(FString name, FPropertyTypeName itemType)
+			: this(name)
+		{
+			ItemType = itemType;
+		}
 
-            if (ItemType == null) throw new InvalidOperationException("Cannot read array with unknown item type");
+		protected internal override void ProcessTypeName(FPropertyTypeName typeName, PackageVersion packageVersion)
+		{
+			if (packageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				if (typeName.Parameters.Count != 1)
+				{
+					throw new InvalidDataException("Failed to read item type for ArrayProperty");
+				}
+				ItemType = typeName.Parameters[0];
+			}
+		}
 
-            int count = reader.ReadInt32();
+		protected internal override void DeserializeHeader(BinaryReader reader, PackageVersion packageVersion)
+		{
+			if (packageVersion < EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				ItemType = new(reader.ReadUnrealString()!);
+			}
+		}
 
-            Array? data;
-            StructPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 4, ItemType, packageVersion, includeHeader, out data);
-            Value = data;
-        }
+		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+		{
+			if (ItemType == null) throw new InvalidOperationException("Cannot read array with unknown item type");
 
-        public override long Serialize(BinaryWriter writer, bool includeHeader, PackageVersion packageVersion)
-        {
-            if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
-            if (ItemType == null) throw new InvalidOperationException("Cannot serialize array with unknown item type");
+			int count = reader.ReadInt32();
 
-            if (includeHeader)
-            {
-                writer.WriteUnrealString(ItemType);
-                writer.Write((byte)0);
-            }
+			Array? data;
+			StructPrototype = ArraySerializationHelper.Deserialize(reader, count, size - 4, ItemType, packageVersion, out data);
+			Value = data;
+		}
 
-            long size = 4;
-            writer.Write(Value.Length);
+		protected internal override void SerializeHeader(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (packageVersion < EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				writer.WriteUnrealString(ItemType!.Name);
+			}
+		}
 
-            size += ArraySerializationHelper.Serialize(writer, ItemType, packageVersion, includeHeader, StructPrototype, Value);
+		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (Value == null) throw new InvalidOperationException("Instance is not valid for serialization");
+			if (ItemType == null) throw new InvalidOperationException("Cannot serialize array with unknown item type");
 
-            return size;
-        }
+			int size = 4;
+			writer.Write(Value.Length);
 
-        public override string ToString()
-        {
-            string? valueString = Value?.Length == 1 && Value.GetValue(0) != null ? Value.GetValue(0)!.ToString() : $"Count = {Value?.Length ?? 0}";
-            return Value == null ? base.ToString() : $"{Name} [{nameof(ArrayProperty)}<{ItemType}>] {valueString}";
-        }
-    }
+			size += ArraySerializationHelper.Serialize(writer, ItemType, packageVersion, StructPrototype, Value);
+
+			return size;
+		}
+
+		public override string? ToString()
+		{
+			string? valueString = Value?.Length == 1 && Value.GetValue(0) != null ? Value.GetValue(0)!.ToString() : $"Count = {Value?.Length ?? 0}";
+			return $"<{ItemType}> {valueString}";
+		}
+	}
 }

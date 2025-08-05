@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,138 +17,138 @@ using System.Collections;
 namespace UeSaveGame.DataTypes
 {
 	public class UBitArray : IList<byte>, IReadOnlyList<byte>
-    {
-        private BitArray? mArray;
+	{
+		private BitArray? mArray;
 
-        public int Count { get; private set; }
+		public int Count { get; private set; }
 
-        public byte this[int index]
-        {
-            get
-            {
-                if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
-                return (byte)(mArray![index] ? 1 : 0);
-            }
-            set
-            {
-                if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
-                mArray![index] = value != 0;
-            }
-        }
+		public byte this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
+				return (byte)(mArray![index] ? 1 : 0);
+			}
+			set
+			{
+				if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
+				mArray![index] = value != 0;
+			}
+		}
 
-        private UBitArray()
-        {
-        }
+		private UBitArray()
+		{
+		}
 
-        public static UBitArray Deserialize(BinaryReader reader)
-        {
-            UBitArray instance = new UBitArray();
+		public static UBitArray Deserialize(BinaryReader reader)
+		{
+			UBitArray instance = new UBitArray();
 
-            instance.Count = reader.ReadInt32();
-            int[] values = new int[(int)Math.Ceiling(instance.Count / 32.0f)];
-            for (int i = 0; i < values.Length; ++i)
-            {
-                values[i] = reader.ReadInt32();
-            }
-            instance.mArray = new BitArray(values);
+			instance.Count = reader.ReadInt32();
+			int[] values = new int[(int)Math.Ceiling(instance.Count / 32.0f)];
+			for (int i = 0; i < values.Length; ++i)
+			{
+				values[i] = reader.ReadInt32();
+			}
+			instance.mArray = new BitArray(values);
 
-            return instance;
-        }
+			return instance;
+		}
 
-        public long Serialize(BinaryWriter writer)
-        {
-            if (mArray == null) throw new InvalidOperationException("Instance is not valid for serialization");
+		public long Serialize(BinaryWriter writer)
+		{
+			if (mArray == null) throw new InvalidOperationException("Instance is not valid for serialization");
 
-            writer.Write(Count);
+			writer.Write(Count);
 
-            int intCount = (int)Math.Ceiling(Count / 32.0f);
+			int intCount = (int)Math.Ceiling(Count / 32.0f);
 
-            byte[] bytes = new byte[intCount * 4];
-            mArray.CopyTo(bytes, 0);
+			byte[] bytes = new byte[intCount * 4];
+			mArray.CopyTo(bytes, 0);
 
-            for (int i = 0; i < intCount; ++i)
-            {
-                writer.Write(BitConverter.ToInt32(bytes, i * 4));
-            }
+			for (int i = 0; i < intCount; ++i)
+			{
+				writer.Write(BitConverter.ToInt32(bytes, i * 4));
+			}
 
-            return 4 + intCount * 4;
-        }
+			return 4 + intCount * 4;
+		}
 
-        public override string ToString()
-        {
-            return $"Count = {Count}";
-        }
+		public override string ToString()
+		{
+			return $"Count = {Count}";
+		}
 
-        #region Interfaces
-        bool ICollection<byte>.IsReadOnly => false;
+		#region Interfaces
+		bool ICollection<byte>.IsReadOnly => false;
 
-        byte IReadOnlyList<byte>.this[int index]
-        {
-            get
-            {
-                if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
-                return (byte)(mArray![index] ? 1 : 0);
-            }
-        }
+		byte IReadOnlyList<byte>.this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= Count) throw new ArgumentOutOfRangeException(nameof(index));
+				return (byte)(mArray![index] ? 1 : 0);
+			}
+		}
 
-        public IEnumerator<byte> GetEnumerator()
-        {
-            for (int i = 0; i < Count; ++i)
-            {
-                yield return (byte)(mArray![i] ? 1 : 0);
-            }
-        }
+		public IEnumerator<byte> GetEnumerator()
+		{
+			for (int i = 0; i < Count; ++i)
+			{
+				yield return (byte)(mArray![i] ? 1 : 0);
+			}
+		}
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            for (int i = 0; i < Count; ++i)
-            {
-                yield return (byte)(mArray![i] ? 1 : 0);
-            }
-        }
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			for (int i = 0; i < Count; ++i)
+			{
+				yield return (byte)(mArray![i] ? 1 : 0);
+			}
+		}
 
-        public void CopyTo(byte[] array, int arrayIndex)
-        {
-            for (int i = 0; i < Count; ++i)
-            {
-                array[i] = (byte)(mArray![i] ? 1 : 0);
-            }
-        }
+		public void CopyTo(byte[] array, int arrayIndex)
+		{
+			for (int i = 0; i < Count; ++i)
+			{
+				array[i] = (byte)(mArray![i] ? 1 : 0);
+			}
+		}
 
-        public int IndexOf(byte item)
-        {
-            throw new NotSupportedException();
-        }
+		public int IndexOf(byte item)
+		{
+			throw new NotSupportedException();
+		}
 
-        public void Insert(int index, byte item)
-        {
-            throw new NotSupportedException();
-        }
+		public void Insert(int index, byte item)
+		{
+			throw new NotSupportedException();
+		}
 
-        public void RemoveAt(int index)
-        {
-            throw new NotSupportedException();
-        }
+		public void RemoveAt(int index)
+		{
+			throw new NotSupportedException();
+		}
 
-        public void Add(byte item)
-        {
-            throw new NotSupportedException();
-        }
+		public void Add(byte item)
+		{
+			throw new NotSupportedException();
+		}
 
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
+		public void Clear()
+		{
+			throw new NotSupportedException();
+		}
 
-        public bool Contains(byte item)
-        {
-            throw new NotSupportedException();
-        }
+		public bool Contains(byte item)
+		{
+			throw new NotSupportedException();
+		}
 
-        public bool Remove(byte item)
-        {
-            throw new NotSupportedException();
-        }
-        #endregion
-    }
+		public bool Remove(byte item)
+		{
+			throw new NotSupportedException();
+		}
+		#endregion
+	}
 }

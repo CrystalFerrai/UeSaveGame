@@ -1,4 +1,4 @@
-﻿// Copyright 2022 Crystal Ferrai
+﻿// Copyright 2025 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,29 +17,29 @@ using UeSaveGame.Util;
 namespace UeSaveGame.TextData
 {
 	public class TextData_StringTableEntry : ITextData
-    {
-        public FString? Table { get; set; }
-        public FString? Key { get; set; }
+	{
+		public FString? Table { get; set; }
+		public FString? Key { get; set; }
 
-        public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
-        {
-            Table = reader.ReadUnrealString();
-            Key = reader.ReadUnrealString();
-        }
+		public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
+		{
+			Table = reader.ReadUnrealString();
+			Key = reader.ReadUnrealString();
+		}
 
-        public long Serialize(BinaryWriter writer, PackageVersion packageVersion)
-        {
-            if (Table == null || Key == null) throw new InvalidOperationException("Instance is not valid for serialization");
+		public int Serialize(BinaryWriter writer, PackageVersion packageVersion)
+		{
+			if (Table == null || Key == null) throw new InvalidOperationException("Instance is not valid for serialization");
 
-            writer.WriteUnrealString(Table);
-            writer.WriteUnrealString(Key);
+			writer.WriteUnrealString(Table);
+			writer.WriteUnrealString(Key);
 
-            return 8 + Table.SizeInBytes + Key.SizeInBytes;
-        }
+			return 8 + Table.SizeInBytes + Key.SizeInBytes;
+		}
 
-        public override string ToString()
-        {
-            return $"{Table}[{Key}]";
-        }
-    }
+		public override string ToString()
+		{
+			return $"{Table}[{Key}]";
+		}
+	}
 }
