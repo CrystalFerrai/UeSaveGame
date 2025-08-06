@@ -84,7 +84,7 @@ namespace UeSaveGame
 
 				if (instance.CustomSaveClass is not null && instance.CustomSaveClass.HasCustomHeader)
 				{
-					instance.CustomSaveClass.DeserializeHeader(reader);
+					instance.CustomSaveClass.DeserializeHeader(reader, instance.Header.PackageVersion);
 				}
 
 				if (instance.Header.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
@@ -95,7 +95,7 @@ namespace UeSaveGame
 
 				if (instance.CustomSaveClass is not null && instance.CustomSaveClass.HasCustomData)
 				{
-					instance.CustomSaveClass.DeserializeData(reader);
+					instance.CustomSaveClass.DeserializeData(reader, instance.Header.PackageVersion);
 				}
 				else
 				{
@@ -139,7 +139,7 @@ namespace UeSaveGame
 
 				if (CustomSaveClass is not null && CustomSaveClass.HasCustomData)
 				{
-					CustomSaveClass.SerializeData(writer);
+					CustomSaveClass.SerializeData(writer, Header.PackageVersion);
 				}
 				else
 				{
@@ -149,7 +149,7 @@ namespace UeSaveGame
 				if (CustomSaveClass is not null && CustomSaveClass.HasCustomHeader)
 				{
 					stream.Seek(headerPosition, SeekOrigin.Begin);
-					CustomSaveClass.SerializeHeader(writer, stream.Length - customHeaderLength - headerPosition);
+					CustomSaveClass.SerializeHeader(writer, stream.Length - customHeaderLength - headerPosition, Header.PackageVersion);
 
 					if (stream.Position - headerPosition != customHeaderLength)
 					{

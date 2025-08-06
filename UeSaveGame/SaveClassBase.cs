@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace UeSaveGame
 {
 	/// <summary>
@@ -49,7 +47,8 @@ namespace UeSaveGame
 		/// Called before deserializing data, only if HasCustomHeader = true
 		/// </summary>
 		/// <param name="reader">A reader positioned at the start of the header</param>
-		public virtual void DeserializeHeader(BinaryReader reader)
+		/// <param name="packageVersion">The engine package serialization version</param>
+		public virtual void DeserializeHeader(BinaryReader reader, PackageVersion packageVersion)
 		{
 		}
 
@@ -58,11 +57,12 @@ namespace UeSaveGame
 		/// </summary>
 		/// <param name="writer">A writer positioned at the start of the header</param>
 		/// <param name="dataLength">The size of the serialized data, in bytes, not including the header</param>
+		/// <param name="packageVersion">The engine package serialization version</param>
 		/// <remarks>
 		/// This is called after data has been serialized. This function must write the same number of bytes
 		/// as was returned by GetHeaderSize.
 		/// </remarks>
-		public virtual void SerializeHeader(BinaryWriter writer, long dataLength)
+		public virtual void SerializeHeader(BinaryWriter writer, long dataLength, PackageVersion packageVersion)
 		{
 		}
 
@@ -70,7 +70,8 @@ namespace UeSaveGame
 		/// Called instead of normal data deserialization, only if HasCustomData = true
 		/// </summary>
 		/// <param name="reader">A reader positioned at the start of the data</param>
-		public virtual void DeserializeData(BinaryReader reader)
+		/// <param name="packageVersion">The engine package serialization version</param>
+		public virtual void DeserializeData(BinaryReader reader, PackageVersion packageVersion)
 		{
 		}
 
@@ -78,8 +79,9 @@ namespace UeSaveGame
 		/// Called instead of normal data serialization, only if HasCustomData = true
 		/// </summary>
 		/// <param name="writer">A writer positioned at the start of the data</param>
+		/// <param name="packageVersion">The engine package serialization version</param>
 		/// <returns>The size of the serialized data, in bytes</returns>
-		public virtual long SerializeData(BinaryWriter writer)
+		public virtual long SerializeData(BinaryWriter writer, PackageVersion packageVersion)
 		{
 			return 0;
 		}
