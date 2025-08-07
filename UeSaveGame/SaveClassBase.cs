@@ -33,12 +33,13 @@ namespace UeSaveGame
 		/// <summary>
 		/// Return the size of the custom header, in bytes. Called if HasCustomHeader = true
 		/// </summary>
+		/// <param name="packageVersion">The engine package serialization version</param>
 		/// <remarks>
 		/// This is called before serializing data in order to allocate sufficient space in the save game.
 		/// SerializeHeader will later be called with the writer positioned at the start of the header.
 		/// The size returned must match the amount of data written by SerializeHeader.
 		/// </remarks>
-		public virtual long GetHeaderSize()
+		public virtual long GetHeaderSize(PackageVersion packageVersion)
 		{
 			return 0;
 		}

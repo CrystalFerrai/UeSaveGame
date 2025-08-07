@@ -30,7 +30,7 @@ namespace UeSaveGame
 			LatestTested = new()
 			{
 				PackageVersionUE4 = EObjectUE4Version.VER_UE4_CORRECT_LICENSEE_FLAG,
-				PackageVersionUE5 = EObjectUE5Version.DATA_RESOURCES
+				PackageVersionUE5 = EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME
 			};
 		}
 

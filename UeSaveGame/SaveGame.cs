@@ -127,7 +127,7 @@ namespace UeSaveGame
 				long customHeaderLength = 0;
 				if (CustomSaveClass is not null && CustomSaveClass.HasCustomHeader)
 				{
-					customHeaderLength = CustomSaveClass.GetHeaderSize();
+					customHeaderLength = CustomSaveClass.GetHeaderSize(Header.PackageVersion);
 					byte[] placeholder = new byte[customHeaderLength];
 					writer.Write(placeholder);
 				}
