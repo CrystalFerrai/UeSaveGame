@@ -102,7 +102,7 @@ namespace UeSaveGame
 					instance.Properties = new List<FPropertyTag>(PropertySerializationHelper.ReadProperties(reader, instance.Header.PackageVersion, true));
 				}
 
-				if (reader.BaseStream.Position != reader.BaseStream.Length) throw new FormatException("Did not reach the end of the file when reading.");
+				if (reader.BaseStream.CanSeek && reader.BaseStream.Position != reader.BaseStream.Length) throw new FormatException("Did not reach the end of the file when reading.");
 			}
 
 			return instance;

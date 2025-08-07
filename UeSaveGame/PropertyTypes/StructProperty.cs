@@ -85,7 +85,7 @@ namespace UeSaveGame.PropertyTypes
 			}
 			else
 			{
-				if (reader.IsUnrealStringAndNotNull())
+				if (!reader.BaseStream.CanSeek || reader.IsUnrealStringAndNotNull())
 				{
 					instance = new PropertiesStruct();
 				}

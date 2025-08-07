@@ -27,6 +27,8 @@ namespace UeSaveGame.Util
 		/// <param name="maxLength">The maximum string length to consider valid</param>
 		public static bool IsUnrealStringAndNotNull(this BinaryReader reader, int maxLength = 2048)
 		{
+			if (!reader.BaseStream.CanSeek) throw new ArgumentException("Reader must be able to seek if passed to this function.", nameof(reader));
+
 			long bytesUntilEnd = reader.BaseStream.Length - reader.BaseStream.Position;
 			if (bytesUntilEnd < 5)
 			{
@@ -92,7 +94,7 @@ namespace UeSaveGame.Util
 						{
 							throw new InvalidOperationException($"String length {count} exceeds the maximum passed in string length {maxLength}");
 						}
-						if (count * 2 > reader.BaseStream.Length - reader.BaseStream.Position)
+						if (reader.BaseStream.CanSeek && count * 2 > reader.BaseStream.Length - reader.BaseStream.Position)
 						{
 							throw new InvalidOperationException($"Attempting to read a string of length {count} would read beyond the end of the stream.");
 						}
@@ -109,7 +111,7 @@ namespace UeSaveGame.Util
 						{
 							throw new InvalidOperationException($"String length {length} exceeds the maximum passed in string length {maxLength}");
 						}
-						if (length > reader.BaseStream.Length - reader.BaseStream.Position)
+						if (reader.BaseStream.CanSeek && length > reader.BaseStream.Length - reader.BaseStream.Position)
 						{
 							throw new InvalidOperationException($"Attempting to read a string of length {length} would read beyond the end of the stream.");
 						}

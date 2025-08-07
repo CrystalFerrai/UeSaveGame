@@ -62,6 +62,21 @@ namespace UeSaveGame
 		}
 
 		/// <summary>
+		/// Creates a new property tag using metadata from an existing property tag. The new
+		/// tag will not contain any property unless it is later assigned one.
+		/// </summary>
+		/// <param name="other">The tag to clone metadata from</param>
+		public FPropertyTag(FPropertyTag other)
+		{
+			Name = other.Name;
+			Type = other.Type.Clone();
+			Property = null;
+			Size = 0;
+			ArrayIndex = other.ArrayIndex;
+			Flags = other.Flags;
+		}
+
+		/// <summary>
 		/// Deserializes a new property tag
 		/// </summary>
 		/// <param name="reader">The reader to read the property from</param>
