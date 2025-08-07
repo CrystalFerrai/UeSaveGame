@@ -35,6 +35,16 @@ namespace UeSaveGame
 			}
 		}
 
+		public FPropertyTypeName Clone()
+		{
+			List<FPropertyTypeName> nodes = new();
+			foreach (FPropertyTypeName node in Parameters)
+			{
+				nodes.Add(node.Clone());
+			}
+			return new(Name, nodes);
+		}
+
 		internal static FPropertyTypeName Deserialize(BinaryReader reader, PackageVersion packageVersion)
 		{
 			FString name = reader.ReadUnrealString() ?? throw new InvalidDataException("Missing expected property type name");

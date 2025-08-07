@@ -76,7 +76,7 @@ namespace UeSaveGame.PropertyTypes
 					int keySize = 0;
 					if (key is StructProperty structKey)
 					{
-						if (!reader.IsUnrealStringAndNotNull())
+						if (reader.BaseStream.CanSeek && !reader.IsUnrealStringAndNotNull())
 						{
 							// Guid is the only known struct type used in map keys aside from generic properties structs
 							structKey.StructType = new(new("Guid"));
