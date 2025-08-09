@@ -52,25 +52,6 @@ namespace UeSaveGame
 			ObjectType = objectType;
 			AttributeType = attributeType;
 		}
-
-		protected MissingAttributeException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
-		{
-			mHasMessage = info.GetBoolean(nameof(mHasMessage));
-			ObjectType = (Type)info.GetValue(nameof(ObjectType), typeof(Type))!;
-			AttributeType = (Type)info.GetValue(nameof(AttributeType), typeof(Type))!;
-		}
-
-		public override void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			if (info is null) throw new ArgumentNullException(nameof(info));
-
-			info.AddValue(nameof(mHasMessage), mHasMessage, typeof(bool));
-			info.AddValue(nameof(ObjectType), ObjectType, typeof(Type));
-			info.AddValue(nameof(AttributeType), AttributeType, typeof(Type));
-
-			base.GetObjectData(info, context);
-		}
 	}
 
 	/// <summary>
@@ -103,23 +84,6 @@ namespace UeSaveGame
 		{
 			mHasMessage = true;
 			RegisteredObject = registeredObject;
-		}
-
-		protected DuplicateRegistrationException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
-		{
-			mHasMessage = info.GetBoolean(nameof(mHasMessage));
-			RegisteredObject = info.GetValue(nameof(RegisteredObject), typeof(object))!;
-		}
-
-		public override void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			if (info is null) throw new ArgumentNullException(nameof(info));
-
-			info.AddValue(nameof(mHasMessage), mHasMessage, typeof(bool));
-			info.AddValue(nameof(RegisteredObject), RegisteredObject, typeof(object));
-
-			base.GetObjectData(info, context);
 		}
 	}
 }
