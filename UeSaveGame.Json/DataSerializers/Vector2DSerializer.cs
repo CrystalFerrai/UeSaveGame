@@ -17,27 +17,24 @@ using UeSaveGame.DataTypes;
 
 namespace UeSaveGame.Json.DataSerializers
 {
-	internal static class VectorSerializer
+	internal static class Vector2DSerializer
 	{
-		public static void ToJson(FVector value, JsonWriter writer)
+		public static void ToJson(FVector2D value, JsonWriter writer)
 		{
 			writer.WriteStartObject();
 
-			writer.WritePropertyName(nameof(FVector.X));
+			writer.WritePropertyName(nameof(FVector2D.X));
 			writer.WriteValue(value.X);
 
-			writer.WritePropertyName(nameof(FVector.Y));
+			writer.WritePropertyName(nameof(FVector2D.Y));
 			writer.WriteValue(value.Y);
-
-			writer.WritePropertyName(nameof(FVector.Z));
-			writer.WriteValue(value.Z);
 
 			writer.WriteEndObject();
 		}
 
-		public static FVector FromJson(JsonReader reader)
+		public static FVector2D FromJson(JsonReader reader)
 		{
-			FVector value = new();
+			FVector2D value = new();
 
 			while (reader.Read())
 			{
@@ -50,14 +47,11 @@ namespace UeSaveGame.Json.DataSerializers
 				{
 					switch ((string)reader.Value!)
 					{
-						case nameof(FVector.X):
+						case nameof(FVector2D.X):
 							value.X = ReadComponent(reader);
 							break;
-						case nameof(FVector.Y):
+						case nameof(FVector2D.Y):
 							value.Y = ReadComponent(reader);
-							break;
-						case nameof(FVector.Z):
-							value.Z = ReadComponent(reader);
 							break;
 					}
 				}
@@ -69,7 +63,7 @@ namespace UeSaveGame.Json.DataSerializers
 		private static double ReadComponent(JsonReader reader)
 		{
 			double? value = reader.ReadAsDouble();
-			if (!value.HasValue) throw new InvalidDataException("Failed to read Vector value.");
+			if (!value.HasValue) throw new InvalidDataException("Failed to read Vector2D value.");
 			return value.Value;
 		}
 	}

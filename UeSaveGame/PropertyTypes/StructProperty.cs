@@ -51,6 +51,8 @@ namespace UeSaveGame.PropertyTypes
 			{
 				switch (typeName.Parameters.Count)
 				{
+					case 0:
+						break;
 					case 1:
 						StructType = typeName.Parameters[0];
 						break;

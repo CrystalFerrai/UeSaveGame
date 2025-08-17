@@ -83,6 +83,8 @@ namespace UeSaveGame.PropertyTypes
 							keySize = 16;
 						}
 					}
+
+					key.ProcessTypeName(ValueType, packageVersion);
 					key.DeserializeValue(reader, keySize, packageVersion);
 				}
 
@@ -91,6 +93,8 @@ namespace UeSaveGame.PropertyTypes
 					Type type = ResolveType(ValueType!.Name);
 					value = (FProperty?)Activator.CreateInstance(type, mPropertyName);
 					if (value == null) throw new FormatException("Error reading map value");
+
+					value.ProcessTypeName(ValueType, packageVersion);
 					value.DeserializeValue(reader, 0, packageVersion);
 				}
 				Value.Add(new KeyValuePair<FProperty, FProperty>(key, value));
