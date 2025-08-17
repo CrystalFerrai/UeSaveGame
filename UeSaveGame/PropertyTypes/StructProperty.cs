@@ -91,7 +91,7 @@ namespace UeSaveGame.PropertyTypes
 				}
 				else
 				{
-					throw new NotSupportedException($"Unable to interpret struct data. If this is a custom struct type, you should implement a custom IStructData to handle serialization.");
+					throw new NotSupportedException($"Unable to interpret struct data for type '{StructType?.Name ?? "Unknown"}'. If this is a custom struct type, you should implement a custom IStructData to handle serialization.");
 				}
 			}
 			instance.Deserialize(reader, size, packageVersion);
