@@ -84,7 +84,7 @@ namespace UeSaveGame.PropertyTypes
 						}
 					}
 
-					key.ProcessTypeName(ValueType, packageVersion);
+					key.ProcessTypeName(KeyType, packageVersion);
 					key.DeserializeValue(reader, keySize, packageVersion);
 				}
 
