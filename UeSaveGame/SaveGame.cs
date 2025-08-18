@@ -90,7 +90,7 @@ namespace UeSaveGame
 				if (instance.Header.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
 				{
 					byte unknown = reader.ReadByte();
-					if (unknown != 0) throw new NotImplementedException();
+					if (unknown != 0) throw new NotImplementedException("Unexpected value after save class name. Game might have custom save class serialization.");
 				}
 
 				if (instance.CustomSaveClass is not null && instance.CustomSaveClass.HasCustomData)

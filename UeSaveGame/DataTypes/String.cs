@@ -37,7 +37,7 @@ namespace UeSaveGame
 
 		public Encoding Encoding { get; }
 
-		public int SizeInBytes => Encoding.GetByteCount(Value) + Encoding.GetByteCount("\0");
+		public int SizeInBytes => Value is null ? 0 : Encoding.GetByteCount(Value) + Encoding.GetByteCount("\0");
 
 		public char this[int index]
 		{
@@ -201,6 +201,7 @@ namespace UeSaveGame
 
 		private static Encoding DetectEncoding(string value)
 		{
+			if (value is null) return Encoding.ASCII;
 			return Encoding.UTF8.GetByteCount(value) == value.Length ? Encoding.ASCII : Encoding.Unicode;
 		}
 	}
