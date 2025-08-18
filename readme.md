@@ -33,8 +33,13 @@ The following games have been tested using the library. Testing consists of load
 * Abiotic Factor - Working but requires custom save classes to serialize custom headers.
 * Aven Colony - Technically works, but the data is just a couple large byte arrays that would need further decoding
 * Carnal Instinct - Fully working
+<<<<<<< Updated upstream
 * Icarus - Fully working. There is a block of base64 in prospect json files. Convert it to binary, then decompress with zlib, then use `PropertySerializationHelper.ReadProperties` to read the data. (It is basically a save file with no header.)
 * Parcel Simulator - Fully working
+=======
+* Icarus - Fully working. There is a block of base64 in prospect json files. Convert it to binary, then decompress with zlib, then use `PropertySerializationHelper.ReadProperties` to read the data. (It is basically a save file with no header.) Or just use [IcarusSaveLib](https://github.com/CrystalFerrai/IcarusSaveLib) which handles all this.
+* Parcel Simulator - Working but requires a custom `IStructData` implementation for the `F_ParcelCriterion_Contents` struct which is not included in the library.
+>>>>>>> Stashed changes
 
 ### Not working
 * Dragon Quest XI - Files are compressed. Have not attempted to decompress and examine
