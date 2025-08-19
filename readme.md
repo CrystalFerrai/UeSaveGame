@@ -2,7 +2,7 @@
 
 This is a .NET library for reading and writing standard Unreal Engine 4 and 5 save game files. This library should work with most games which do not use any custom serialization, but may require updating for games it hasn't seen before.
 
-Currently supports Unreal Engine versions 4.26 - 5.5. Later versions may work, but have not been tested.
+Currently supports Unreal Engine versions 4.26 - 5.6. Other versions may work, but have not been tested.
 
 ## Releases
 
