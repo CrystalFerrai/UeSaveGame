@@ -261,5 +261,6 @@ namespace UeSaveGame
 		HasPropertyExtensions = 0x04,
 		HasBinaryOrNativeSerialize = 0x08,
 		BoolTrue = 0x10,
+		SkippedSerialize = 0x20
 	};
 }

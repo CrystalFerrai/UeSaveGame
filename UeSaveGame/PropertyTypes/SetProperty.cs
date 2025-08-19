@@ -18,8 +18,6 @@ namespace UeSaveGame.PropertyTypes
 {
 	public class SetProperty : ArrayProperty
 	{
-		private int mRemovedCount;
-
 		public SetProperty(FString name)
 			: base(name)
 		{
@@ -29,8 +27,8 @@ namespace UeSaveGame.PropertyTypes
 		{
 			if (ItemType == null) throw new InvalidOperationException("Cannot read set with unknown item type");
 
-			mRemovedCount = reader.ReadInt32();
-			if (mRemovedCount != 0)
+			int removedCount = reader.ReadInt32();
+			if (removedCount != 0)
 			{
 				// Sets can store items to be removed as well as items to be added. Have not encountered the removed case yet.
 				throw new NotImplementedException();
@@ -49,11 +47,7 @@ namespace UeSaveGame.PropertyTypes
 			if (ItemType == null) throw new InvalidOperationException("Cannot serialize set with unknown item type");
 
 			int size = 4;
-			writer.Write(mRemovedCount);
-			if (mRemovedCount != 0)
-			{
-				throw new NotImplementedException();
-			}
+			writer.Write(0); // removed count
 
 			size += 4;
 			writer.Write(Value.Length);

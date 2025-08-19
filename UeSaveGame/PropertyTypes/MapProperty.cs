@@ -18,8 +18,6 @@ namespace UeSaveGame.PropertyTypes
 {
 	public class MapProperty : FProperty<IList<KeyValuePair<FProperty, FProperty>>>
 	{
-		private int mRemovedCount;
-
 		public FPropertyTypeName? KeyType { get; set; }
 
 		public FPropertyTypeName? ValueType { get; set; }
@@ -55,11 +53,10 @@ namespace UeSaveGame.PropertyTypes
 		{
 			if (KeyType == null || ValueType == null) throw new InvalidOperationException("Unknown map type cannot be read.");
 
-			mRemovedCount = reader.ReadInt32();
-			if (mRemovedCount != 0)
+			int modifiedCount = reader.ReadInt32();
+			if (modifiedCount != 0)
 			{
-				// Maps share some serialization code with Sets. Sets can store items to be removed as well as items to be added.
-				// Not sure if such a feature exists for maps, but it has not yet been encountered if it does.
+				// Have never seen this used anywhere
 				throw new NotImplementedException();
 			}
 
@@ -116,8 +113,8 @@ namespace UeSaveGame.PropertyTypes
 
 			long startPosition = writer.BaseStream.Position;
 
-			writer.Write(mRemovedCount);
-
+			writer.Write(0); // modified count
+			
 			writer.Write(Value.Count);
 			foreach (var pair in Value)
 			{
