@@ -33,6 +33,12 @@ namespace UeSaveGame.PropertyTypes
 			ItemType = itemType;
 		}
 
+		public ArrayProperty(FString name, FPropertyTypeName itemType, FPropertyTag structPrototype)
+			: this(name, itemType)
+		{
+			StructPrototype = structPrototype;
+		}
+
 		protected internal override void ProcessTypeName(FPropertyTypeName typeName, PackageVersion packageVersion)
 		{
 			if (packageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)

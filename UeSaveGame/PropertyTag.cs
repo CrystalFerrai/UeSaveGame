@@ -47,6 +47,11 @@ namespace UeSaveGame
 
 		public static FPropertyTag NoneProperty = new(new("None"), new(new("None")), 0, 0, null, EPropertyTagFlags.None) { IsNone = true };
 
+		public FPropertyTag(FString name, FPropertyTypeName type, EPropertyTagFlags flags)
+			: this(name, type, 0, 0, null, flags)
+		{
+		}
+
 		internal FPropertyTag(FString name, FPropertyTypeName type, int size, int arrayIndex, FProperty? property, EPropertyTagFlags flags)
 		{
 			mSizeOffset = 0;
@@ -253,7 +258,7 @@ namespace UeSaveGame
 		}
 	}
 
-	internal enum EPropertyTagFlags : byte
+	public enum EPropertyTagFlags : byte
 	{
 		None = 0x00,
 		HasArrayIndex = 0x01,
