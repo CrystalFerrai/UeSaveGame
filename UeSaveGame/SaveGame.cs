@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.IO;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Text;
@@ -116,48 +117,38 @@ namespace UeSaveGame
 		{
 			using (BinaryWriter writer = new BinaryWriter(stream, Encoding.ASCII, true))
 			{
-				writer.Write(sMagic);
+				WritePart(SaveGamePart.Magic, writer);
+				WritePart(SaveGamePart.Header, writer);
+				WritePart(SaveGamePart.CustomFormats, writer);
+				WritePart(SaveGamePart.SaveClass, writer);
+				WritePart(SaveGamePart.Data, writer);
+			}
+		}
 
-				Header.Serialize(writer);
-				CustomFormats.Serialize(writer);
-				writer.WriteUnrealString(SaveClass!);
-
-				long headerPosition = stream.Position;
-
-				long customHeaderLength = 0;
-				if (CustomSaveClass is not null && CustomSaveClass.HasCustomHeader)
-				{
-					customHeaderLength = CustomSaveClass.GetHeaderSize(Header.PackageVersion);
-					byte[] placeholder = new byte[customHeaderLength];
-					writer.Write(placeholder);
-				}
-
-				if (Header.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
-				{
-					writer.Write((byte)0);
-				}
-
-				if (CustomSaveClass is not null && CustomSaveClass.HasCustomData)
-				{
-					CustomSaveClass.SerializeData(writer, Header.PackageVersion);
-				}
-				else
-				{
-					PropertySerializationHelper.WriteProperties(Properties!, writer, Header.PackageVersion, true);
-				}
-
-				if (CustomSaveClass is not null && CustomSaveClass.HasCustomHeader)
-				{
-					stream.Seek(headerPosition, SeekOrigin.Begin);
-					CustomSaveClass.SerializeHeader(writer, stream.Length - customHeaderLength - headerPosition, Header.PackageVersion);
-
-					if (stream.Position - headerPosition != customHeaderLength)
-					{
-						throw new InvalidOperationException($"{CustomSaveClass.GetType().FullName} returned {customHeaderLength} from GetHeaderSize, but SerializeHeader wrote {stream.Position - headerPosition} bytes.");
-					}
-
-					stream.Seek(0, SeekOrigin.End);
-				}
+		/// <summary>
+		/// Write a specific part of the save game
+		/// </summary>
+		/// <param name="part">The part to write</param>
+		/// <param name="writer">The writer to write to</param>
+		public void WritePart(SaveGamePart part, BinaryWriter writer)
+		{
+			switch (part)
+			{
+				case SaveGamePart.Magic:
+					writer.Write(sMagic);
+					break;
+				case SaveGamePart.Header:
+					Header.Serialize(writer);
+					break;
+				case SaveGamePart.CustomFormats:
+					CustomFormats.Serialize(writer);
+					break;
+				case SaveGamePart.SaveClass:
+					writer.WriteUnrealString(SaveClass!);
+					break;
+				case SaveGamePart.Data:
+					WriteDataPart(writer);
+					break;
 			}
 		}
 
@@ -167,6 +158,46 @@ namespace UeSaveGame
 			if (SaveClass is not null && sSaveClassMap.TryGetValue(SaveClass, out Type? saveClassType))
 			{
 				CustomSaveClass = (SaveClassBase)Activator.CreateInstance(saveClassType)!;
+			}
+		}
+
+		private void WriteDataPart(BinaryWriter writer)
+		{
+			long headerPosition = writer.BaseStream.Position;
+
+			long customHeaderLength = 0;
+			if (CustomSaveClass is not null && CustomSaveClass.HasCustomHeader)
+			{
+				customHeaderLength = CustomSaveClass.GetHeaderSize(Header.PackageVersion);
+				byte[] placeholder = new byte[customHeaderLength];
+				writer.Write(placeholder);
+			}
+
+			if (Header.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			{
+				writer.Write((byte)0);
+			}
+
+			if (CustomSaveClass is not null && CustomSaveClass.HasCustomData)
+			{
+				CustomSaveClass.SerializeData(writer, Header.PackageVersion);
+			}
+			else
+			{
+				PropertySerializationHelper.WriteProperties(Properties!, writer, Header.PackageVersion, true);
+			}
+
+			if (CustomSaveClass is not null && CustomSaveClass.HasCustomHeader)
+			{
+				writer.BaseStream.Seek(headerPosition, SeekOrigin.Begin);
+				CustomSaveClass.SerializeHeader(writer, writer.BaseStream.Length - customHeaderLength - headerPosition, Header.PackageVersion);
+
+				if (writer.BaseStream.Position - headerPosition != customHeaderLength)
+				{
+					throw new InvalidOperationException($"{CustomSaveClass.GetType().FullName} returned {customHeaderLength} from GetHeaderSize, but SerializeHeader wrote {writer.BaseStream.Position - headerPosition} bytes.");
+				}
+
+				writer.BaseStream.Seek(0, SeekOrigin.End);
 			}
 		}
 
@@ -203,6 +234,42 @@ namespace UeSaveGame
 		}
 
 		#endregion
+	}
+
+	/// <summary>
+	/// Identifies a specific part of a save game
+	/// </summary>
+	public enum SaveGamePart
+	{
+		/// <summary>
+		/// No part / nothing
+		/// </summary>
+		None,
+
+		/// <summary>
+		/// The magic number value usually at the start of a save file
+		/// </summary>
+		Magic,
+
+		/// <summary>
+		/// The header which includes version information
+		/// </summary>
+		Header,
+
+		/// <summary>
+		/// The custom formats block
+		/// </summary>
+		CustomFormats,
+
+		/// <summary>
+		/// The save class name
+		/// </summary>
+		SaveClass,
+
+		/// <summary>
+		/// The save data
+		/// </summary>
+		Data
 	}
 
 	/// <summary>
