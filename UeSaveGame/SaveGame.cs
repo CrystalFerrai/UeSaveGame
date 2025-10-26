@@ -29,7 +29,7 @@ namespace UeSaveGame
 
 		private static readonly Dictionary<string, Type> sSaveClassMap;
 
-		internal SaveGameHeader Header { get; set; }
+		internal SaveGameVersions Versions { get; set; }
 		internal CustomFormatData CustomFormats { get; set; }
 
 		/// <summary>
@@ -77,7 +77,7 @@ namespace UeSaveGame
 			{
 				if (reader.ReadUInt32() != sMagic) throw new InvalidDataException("Save game header is missing or invalid.");
 
-				instance.Header = SaveGameHeader.Deserialize(reader);
+				instance.Versions = SaveGameVersions.Deserialize(reader);
 
 				instance.CustomFormats = CustomFormatData.Deserialize(reader);
 
@@ -85,10 +85,10 @@ namespace UeSaveGame
 
 				if (instance.CustomSaveClass is not null && instance.CustomSaveClass.HasCustomHeader)
 				{
-					instance.CustomSaveClass.DeserializeHeader(reader, instance.Header.PackageVersion);
+					instance.CustomSaveClass.DeserializeHeader(reader, instance.Versions.PackageVersion);
 				}
 
-				if (instance.Header.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+				if (instance.Versions.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
 				{
 					byte unknown = reader.ReadByte();
 					if (unknown != 0) throw new NotImplementedException("Unexpected value after save class name. Game might have custom save class serialization.");
@@ -96,11 +96,11 @@ namespace UeSaveGame
 
 				if (instance.CustomSaveClass is not null && instance.CustomSaveClass.HasCustomData)
 				{
-					instance.CustomSaveClass.DeserializeData(reader, instance.Header.PackageVersion);
+					instance.CustomSaveClass.DeserializeData(reader, instance.Versions.PackageVersion);
 				}
 				else
 				{
-					instance.Properties = new List<FPropertyTag>(PropertySerializationHelper.ReadProperties(reader, instance.Header.PackageVersion, true));
+					instance.Properties = new List<FPropertyTag>(PropertySerializationHelper.ReadProperties(reader, instance.Versions.PackageVersion, true));
 				}
 
 				if (reader.BaseStream.CanSeek && reader.BaseStream.Position != reader.BaseStream.Length) throw new FormatException("Did not reach the end of the file when reading.");
@@ -118,7 +118,7 @@ namespace UeSaveGame
 			using (BinaryWriter writer = new BinaryWriter(stream, Encoding.ASCII, true))
 			{
 				WritePart(SaveGamePart.Magic, writer);
-				WritePart(SaveGamePart.Header, writer);
+				WritePart(SaveGamePart.Versions, writer);
 				WritePart(SaveGamePart.CustomFormats, writer);
 				WritePart(SaveGamePart.SaveClass, writer);
 				WritePart(SaveGamePart.Data, writer);
@@ -137,8 +137,8 @@ namespace UeSaveGame
 				case SaveGamePart.Magic:
 					writer.Write(sMagic);
 					break;
-				case SaveGamePart.Header:
-					Header.Serialize(writer);
+				case SaveGamePart.Versions:
+					Versions.Serialize(writer);
 					break;
 				case SaveGamePart.CustomFormats:
 					CustomFormats.Serialize(writer);
@@ -168,29 +168,29 @@ namespace UeSaveGame
 			long customHeaderLength = 0;
 			if (CustomSaveClass is not null && CustomSaveClass.HasCustomHeader)
 			{
-				customHeaderLength = CustomSaveClass.GetHeaderSize(Header.PackageVersion);
+				customHeaderLength = CustomSaveClass.GetHeaderSize(Versions.PackageVersion);
 				byte[] placeholder = new byte[customHeaderLength];
 				writer.Write(placeholder);
 			}
 
-			if (Header.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
+			if (Versions.PackageVersion >= EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME)
 			{
 				writer.Write((byte)0);
 			}
 
 			if (CustomSaveClass is not null && CustomSaveClass.HasCustomData)
 			{
-				CustomSaveClass.SerializeData(writer, Header.PackageVersion);
+				CustomSaveClass.SerializeData(writer, Versions.PackageVersion);
 			}
 			else
 			{
-				PropertySerializationHelper.WriteProperties(Properties!, writer, Header.PackageVersion, true);
+				PropertySerializationHelper.WriteProperties(Properties!, writer, Versions.PackageVersion, true);
 			}
 
 			if (CustomSaveClass is not null && CustomSaveClass.HasCustomHeader)
 			{
 				writer.BaseStream.Seek(headerPosition, SeekOrigin.Begin);
-				CustomSaveClass.SerializeHeader(writer, writer.BaseStream.Length - customHeaderLength - headerPosition, Header.PackageVersion);
+				CustomSaveClass.SerializeHeader(writer, writer.BaseStream.Length - customHeaderLength - headerPosition, Versions.PackageVersion);
 
 				if (writer.BaseStream.Position - headerPosition != customHeaderLength)
 				{
@@ -252,9 +252,9 @@ namespace UeSaveGame
 		Magic,
 
 		/// <summary>
-		/// The header which includes version information
+		/// Version information
 		/// </summary>
-		Header,
+		Versions,
 
 		/// <summary>
 		/// The custom formats block
@@ -275,15 +275,15 @@ namespace UeSaveGame
 	/// <summary>
 	/// Block of version information from the file header
 	/// </summary>
-	internal struct SaveGameHeader
+	internal struct SaveGameVersions
 	{
 		public SaveGameFileVersion SaveGameVersion;
 		public PackageVersion PackageVersion;
 		public EngineVersion EngineVersion;
 
-		public static SaveGameHeader Deserialize(BinaryReader reader)
+		public static SaveGameVersions Deserialize(BinaryReader reader)
 		{
-			SaveGameHeader instance = new();
+			SaveGameVersions instance = new();
 
 			instance.SaveGameVersion = (SaveGameFileVersion)reader.ReadInt32();
 			if (instance.SaveGameVersion != SaveGameFileVersion.AddedCustomVersions && instance.SaveGameVersion != SaveGameFileVersion.PackageFileSummaryVersionChange)
