@@ -15,7 +15,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using UeSaveGame.Util;
 
@@ -94,8 +93,8 @@ namespace UeSaveGame.Json
 
 			writer.WriteStartObject();
 
-			writer.WritePropertyName(nameof(SaveGame.Header));
-			mHeaderSerializer.ToJson(save.Header, writer);
+			writer.WritePropertyName(nameof(SaveGame.Versions));
+			mHeaderSerializer.ToJson(save.Versions, writer);
 
 			writer.WritePropertyName(nameof(SaveGame.CustomFormats));
 			mCustomFormatDataSerializer.ToJson(save.CustomFormats, writer);
@@ -153,8 +152,8 @@ namespace UeSaveGame.Json
 				{
 					switch ((string)reader.Value!)
 					{
-						case nameof(SaveGame.Header):
-							save.Header = mHeaderSerializer.FromJson(reader);
+						case nameof(SaveGame.Versions):
+							save.Versions = mHeaderSerializer.FromJson(reader);
 							break;
 						case nameof(SaveGame.CustomFormats):
 							save.CustomFormats = mCustomFormatDataSerializer.FromJson(reader);
@@ -236,11 +235,11 @@ namespace UeSaveGame.Json
 			mEngineVersionSerializer = new();
 		}
 
-		public void ToJson(SaveGameHeader data, JsonWriter writer)
+		public void ToJson(SaveGameVersions data, JsonWriter writer)
 		{
 			writer.WriteStartObject();
 
-			writer.WritePropertyName(nameof(SaveGameHeader.SaveGameVersion));
+			writer.WritePropertyName(nameof(SaveGameVersions.SaveGameVersion));
 			writer.WriteValue((int)data.SaveGameVersion);
 
 			writer.WritePropertyName(nameof(PackageVersion.PackageVersionUE4));
@@ -249,15 +248,15 @@ namespace UeSaveGame.Json
 			writer.WritePropertyName(nameof(PackageVersion.PackageVersionUE5));
 			writer.WriteValue(data.PackageVersion.PackageVersionUE5);
 
-			writer.WritePropertyName(nameof(SaveGameHeader.EngineVersion));
+			writer.WritePropertyName(nameof(SaveGameVersions.EngineVersion));
 			mEngineVersionSerializer.ToJson(data.EngineVersion, writer);
 
 			writer.WriteEndObject();
 		}
 
-		public SaveGameHeader FromJson(JsonReader reader)
+		public SaveGameVersions FromJson(JsonReader reader)
 		{
-			SaveGameHeader data = new();
+			SaveGameVersions data = new();
 
 			while (reader.Read())
 			{
@@ -270,7 +269,7 @@ namespace UeSaveGame.Json
 				{
 					switch ((string)reader.Value!)
 					{
-						case nameof(SaveGameHeader.SaveGameVersion):
+						case nameof(SaveGameVersions.SaveGameVersion):
 							data.SaveGameVersion = (SaveGameFileVersion)reader.ReadAsInt32()!.Value;
 							break;
 						case nameof(PackageVersion.PackageVersionUE4):
@@ -279,7 +278,7 @@ namespace UeSaveGame.Json
 						case nameof(PackageVersion.PackageVersionUE5):
 							data.PackageVersion.PackageVersionUE5 = (EObjectUE5Version)reader.ReadAsInt32()!.Value;
 							break;
-						case nameof(SaveGameHeader.EngineVersion):
+						case nameof(SaveGameVersions.EngineVersion):
 							data.EngineVersion = mEngineVersionSerializer.FromJson(reader);
 							break;
 					}
