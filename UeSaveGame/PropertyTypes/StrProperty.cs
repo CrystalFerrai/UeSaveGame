@@ -27,7 +27,8 @@ namespace UeSaveGame.PropertyTypes
 
 		protected internal override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
 		{
-			Value = reader.ReadUnrealString();
+			int maxLength = Math.Max(2048, size);
+			Value = reader.ReadUnrealString(maxLength);
 		}
 
 		protected internal override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
