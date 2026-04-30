@@ -18,7 +18,7 @@ using UeSaveGame.StructData;
 
 namespace UeSaveGame.Json.StructDataSerializers
 {
-	internal class IntPointStructSerializer : StructDataSerializerBase
+	public class IntPointStructSerializer : StructDataSerializerBase
 	{
 		public override IEnumerable<string> StructTypes
 		{

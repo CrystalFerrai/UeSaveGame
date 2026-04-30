@@ -18,7 +18,7 @@ using UeSaveGame.StructData;
 
 namespace UeSaveGame.Json.StructDataSerializers
 {
-	internal class DoftObjectPathStructSerializer : StructDataSerializerBase
+	public class DoftObjectPathStructSerializer : StructDataSerializerBase
 	{
 		public override IEnumerable<string> StructTypes
 		{

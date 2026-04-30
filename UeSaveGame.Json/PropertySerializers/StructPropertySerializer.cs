@@ -54,10 +54,8 @@ namespace UeSaveGame.Json.PropertySerializers
 			writer.WritePropertyName(nameof(StructProperty.Value));
 			IStructDataSerializer? dataSerializer;
 			if (structProperty.StructType is not null &&
-				(
 				sTypeMap.TryGetValue(structProperty.StructType!.Name, out dataSerializer) ||
-				sNameMap.TryGetValue(structProperty.StructType!.Name, out dataSerializer))
-				)
+				sNameMap.TryGetValue(structProperty.mPropertyName, out dataSerializer))
 			{
 				dataSerializer.ToJson(structProperty.Value, writer);
 			}

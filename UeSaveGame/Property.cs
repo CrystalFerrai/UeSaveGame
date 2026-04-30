@@ -26,7 +26,7 @@ namespace UeSaveGame
 		private static readonly Dictionary<string, Type> sTypeMap;
 
 		// Name of the property tag that owns this property
-		protected readonly FString mPropertyName;
+		protected internal readonly FString mPropertyName;
 
 		/// <summary>
 		/// Gets a mapping of property type names to property types
