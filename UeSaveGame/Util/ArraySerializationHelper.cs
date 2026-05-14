@@ -49,12 +49,24 @@ namespace UeSaveGame.Util
 				}
 				else
 				{
-					prototype = FPropertyTag.Deserialize(reader, packageVersion);
-					StructProperty prototypeProperty = (StructProperty)prototype.Property!;
+					if (!reader.BaseStream.CanSeek || reader.IsUnrealStringAndNotNull())
+					{
+						prototype = FPropertyTag.Deserialize(reader, packageVersion);
+						StructProperty prototypeProperty = (StructProperty)prototype.Property!;
 
-					structName = prototype.Name;
-					structType = prototypeProperty.StructType!;
-					structGuid = prototypeProperty.StructGuid;
+						structName = prototype.Name;
+						structType = prototypeProperty.StructType!;
+						structGuid = prototypeProperty.StructGuid;
+					}
+					else if (size / count == 16 && size % count == 0)
+					{
+						structName = new("None");
+						structType = new(new("Guid"));
+					}
+					else
+					{
+						throw new InvalidOperationException("Unable to determine struct type for array items");
+					}
 				}
 
 				for (int i = 0; i < count; ++i)
@@ -127,8 +139,6 @@ namespace UeSaveGame.Util
 			int size = 0;
 			if (itemType.Name == "StructProperty")
 			{
-				if (packageVersion < EObjectUE5Version.PROPERTY_TAG_COMPLETE_TYPE_NAME && prototype is null) throw new InvalidOperationException("Instance is not valid for serialization");
-
 				size += prototype?.Serialize(writer, packageVersion) ?? 0;
 
 				if (inData.Length > 0)

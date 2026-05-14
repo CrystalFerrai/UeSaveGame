@@ -146,6 +146,12 @@ namespace UeSaveGame.Json
 			writer.WritePropertyName(nameof(FPropertyTag.Flags));
 			writer.WriteValue((byte)property.Flags);
 
+			if (property.ArrayIndex != 0)
+			{
+				writer.WritePropertyName(nameof(FPropertyTag.ArrayIndex));
+				writer.WriteValue(property.ArrayIndex);
+			}
+
 			writer.WritePropertyName(nameof(FProperty.Value));
 			IPropertySerializer serializer = GetSerializer(property.Type.Name);
 			serializer.ToJson(property.Property!, writer);
@@ -163,6 +169,7 @@ namespace UeSaveGame.Json
 			FString? propertyName = null;
 			FPropertyTypeName? propertyType = null;
 			EPropertyTagFlags propertyFlags = EPropertyTagFlags.None;
+			int arrayIndex = 0;
 			JToken? propertyValue = null;
 
 			while (reader.Read())
@@ -185,6 +192,9 @@ namespace UeSaveGame.Json
 						case nameof(FPropertyTag.Flags):
 							propertyFlags = (EPropertyTagFlags)reader.ReadAsInt32()!.Value;
 							break;
+						case nameof(FPropertyTag.ArrayIndex):
+							arrayIndex = reader.ReadAsInt32()!.Value;
+							break;
 						case nameof(FProperty.Value):
 							if (reader.ReadAndMoveToContent())
 							{
@@ -205,7 +215,7 @@ namespace UeSaveGame.Json
 				return null;
 			}
 
-			FPropertyTag property = new(propertyName, propertyType, 0, 0, FProperty.Create(propertyName, propertyType), propertyFlags);
+			FPropertyTag property = new(propertyName, propertyType, 0, arrayIndex, FProperty.Create(propertyName, propertyType), propertyFlags);
 
 			if (propertyValue is not null)
 			{

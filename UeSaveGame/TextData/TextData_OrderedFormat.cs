@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Xml.Linq;
 using UeSaveGame.DataTypes;
+using UeSaveGame.Util;
 
 namespace UeSaveGame.TextData
 {
-	public class TextData_ArgumentFormat : ITextData
+	public class TextData_OrderedFormat : ITextData
 	{
 		public FText? FormatString { get; set; }
 
-		public TextArgument[]? Arguments { get; set; }
+		public TextArgumentValue[]? Arguments { get; set; }
 
 		public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
 		{
@@ -28,16 +30,16 @@ namespace UeSaveGame.TextData
 			FormatString.Deserialize(reader, packageVersion);
 
 			int argumentCount = reader.ReadInt32();
-			Arguments = new TextArgument[argumentCount];
+			Arguments = new TextArgumentValue[argumentCount];
 			for (int i = 0; i < argumentCount; ++i)
 			{
-				Arguments[i] = TextArgument.Deserialize(reader, packageVersion);
+				Arguments[i] = TextArgumentValue.Deserialize(reader, packageVersion);
 			}
 		}
 
 		public int Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
-			if (FormatString is null) throw new InvalidOperationException("TextData_ArgumentFormat has no format string");
+			if (FormatString is null) throw new InvalidOperationException("TextData_OrderedFormat has no format string");
 			int size = FormatString.Serialize(writer, packageVersion);
 
 			if (Arguments is null)

@@ -109,7 +109,7 @@ namespace UeSaveGame.Json.PropertySerializers
 													{
 														reader.Read();
 														IPropertySerializer keySerializer = PropertiesSerializer.GetSerializer(mapProperty.KeyType!.Name);
-														key = FProperty.Create(FString.Empty, mapProperty.KeyType!);
+														key = FProperty.Create(property.mPropertyName, mapProperty.KeyType!);
 														keySerializer.FromJson(key, reader);
 													}
 													break;
@@ -117,7 +117,7 @@ namespace UeSaveGame.Json.PropertySerializers
 													{
 														reader.Read();
 														IPropertySerializer keySerializer = PropertiesSerializer.GetSerializer(mapProperty.ValueType!.Name);
-														value = FProperty.Create(FString.Empty, mapProperty.ValueType!);
+														value = FProperty.Create(property.mPropertyName, mapProperty.ValueType!);
 														keySerializer.FromJson(value, reader);
 													}
 													break;

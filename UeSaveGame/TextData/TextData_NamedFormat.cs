@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Xml.Linq;
 using UeSaveGame.DataTypes;
+using UeSaveGame.Util;
 
 namespace UeSaveGame.TextData
 {
-	public class TextData_ArgumentFormat : ITextData
+	public class TextData_NamedFormat : ITextData
 	{
 		public FText? FormatString { get; set; }
 
-		public TextArgument[]? Arguments { get; set; }
+		public List<KeyValuePair<FString, TextArgumentValue>>? Arguments { get; set; }
 
 		public void Deserialize(BinaryReader reader, PackageVersion packageVersion)
 		{
@@ -28,29 +30,40 @@ namespace UeSaveGame.TextData
 			FormatString.Deserialize(reader, packageVersion);
 
 			int argumentCount = reader.ReadInt32();
-			Arguments = new TextArgument[argumentCount];
+			Arguments = new(argumentCount);
 			for (int i = 0; i < argumentCount; ++i)
 			{
-				Arguments[i] = TextArgument.Deserialize(reader, packageVersion);
+				FString? name = reader.ReadUnrealString();
+				if (name is null) throw new InvalidDataException($"TextData_NamedFormat argument {i} has a null name");
+
+				TextArgumentValue value = TextArgumentValue.Deserialize(reader, packageVersion);
+
+				Arguments.Add(new(name, value));
 			}
 		}
 
 		public int Serialize(BinaryWriter writer, PackageVersion packageVersion)
 		{
-			if (FormatString is null) throw new InvalidOperationException("TextData_ArgumentFormat has no format string");
-			int size = FormatString.Serialize(writer, packageVersion);
+			if (FormatString is null) throw new InvalidOperationException("TextData_NamedFormat has no format string");
 
+			int size = 0;
 			if (Arguments is null)
 			{
 				writer.Write(0);
-				return size + 4;
 			}
-
-			writer.Write(Arguments.Length);
-			size += 4;
-			for (int i = 0; i < Arguments.Length; ++i)
+			else
 			{
-				size += Arguments[i].Serialize(writer, packageVersion);
+				size += FormatString.Serialize(writer, packageVersion);
+
+				writer.Write(Arguments.Count);
+				size += 4;
+				long argPos = writer.BaseStream.Position;
+				for (int i = 0; i < Arguments.Count; ++i)
+				{
+					writer.WriteUnrealString(Arguments[i].Key);
+					Arguments[i].Value.Serialize(writer, packageVersion);
+				}
+				size += (int)(writer.BaseStream.Position - argPos);
 			}
 
 			return size;

@@ -1,4 +1,4 @@
-﻿// Copyright 2025 Crystal Ferrai
+﻿// Copyright 2026 Crystal Ferrai
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,32 +44,7 @@ namespace UeSaveGame.Json.TextDataSerializers
 			{
 				foreach (TextArgument argument in textData.Arguments)
 				{
-					writer.WriteStartObject();
-
-					writer.WritePropertyName(nameof(TextArgument.Name));
-					writer.WriteFStringValue(argument.Name);
-
-					writer.WritePropertyName(nameof(TextArgument.Type));
-					writer.WriteValue((int)argument.Type);
-
-					writer.WritePropertyName(nameof(TextArgument.Value));
-					switch (argument.Type)
-					{
-						case EFormatArgumentType.Int:
-						case EFormatArgumentType.UInt:
-						case EFormatArgumentType.Float:
-						case EFormatArgumentType.Double:
-							writer.WriteValue(argument.Value);
-							break;
-						case EFormatArgumentType.Text:
-							TextSerializer.ToJson((FText)argument.Value, writer);
-							break;
-						case EFormatArgumentType.Gender:
-							writer.WriteValue((byte)(ETextGender)argument.Value);
-							break;
-					}
-
-					writer.WriteEndObject();
+					TextArgumentSerializer.WriteArgument(argument, writer);
 				}
 			}
 			writer.WriteEndArray();
@@ -107,65 +82,11 @@ namespace UeSaveGame.Json.TextDataSerializers
 
 									if (reader.TokenType == JsonToken.StartObject)
 									{
-										TextArgument argument = new();
-										JToken? argumentValue = null;
-										while (reader.Read())
-										{
-											if (reader.TokenType == JsonToken.EndObject)
-											{
-												break;
-											}
-
-											if (reader.TokenType == JsonToken.PropertyName)
-											{
-												switch (reader.Value)
-												{
-													case nameof(TextArgument.Name):
-														argument.Name = reader.ReadAsFString();
-														break;
-													case nameof(TextArgument.Type):
-														argument.Type = (EFormatArgumentType)reader.ReadAsInt32()!;
-														break;
-													case nameof(TextArgument.Value):
-														if (reader.ReadAndMoveToContent())
-														{
-															argumentValue = JToken.ReadFrom(reader);
-														}
-														break;
-												}
-											}
-										}
-
-										if (argumentValue is not null)
-										{
-											switch (argument.Type)
-											{
-												case EFormatArgumentType.Int:
-													argument.Value = (int)argumentValue;
-													break;
-												case EFormatArgumentType.UInt:
-													argument.Value = (uint)argumentValue;
-													break;
-												case EFormatArgumentType.Float:
-													argument.Value = (float)argumentValue;
-													break;
-												case EFormatArgumentType.Double:
-													argument.Value = (double)argumentValue;
-													break;
-												case EFormatArgumentType.Text:
-													argument.Value = TextSerializer.FromJson(argumentValue.CreateReader());
-													break;
-												case EFormatArgumentType.Gender:
-													argument.Value = (ETextGender)(int)argumentValue;
-													break;
-											}
-										}
-
-										arguments.Add(argument);
+										arguments.Add(TextArgumentSerializer.ReadArgument(reader));
 									}
-
-									textData.Arguments = arguments.ToArray();
 								}
+
+								textData.Arguments = arguments.ToArray();
 							}
 							break;
 					}
@@ -173,6 +94,134 @@ namespace UeSaveGame.Json.TextDataSerializers
 			}
 
 			return textData;
+		}
+	}
+
+	internal static class TextArgumentSerializer
+	{
+		public static TextArgument ReadArgument(JsonReader reader)
+		{
+			TextArgument argument = new();
+			while (reader.Read())
+			{
+				if (reader.TokenType == JsonToken.EndObject)
+				{
+					break;
+				}
+
+				if (reader.TokenType == JsonToken.PropertyName)
+				{
+					switch (reader.Value)
+					{
+						case nameof(TextArgument.Name):
+							argument.Name = reader.ReadAsFString();
+							break;
+						case nameof(TextArgument.Value):
+							if (reader.ReadAndMoveToContent())
+							{
+								argument.Value = ReadArgumentValue(reader);
+							}
+							break;
+					}
+				}
+			}
+
+			return argument;
+		}
+
+		public static void WriteArgument(TextArgument argument, JsonWriter writer)
+		{
+			writer.WriteStartObject();
+
+			writer.WritePropertyName(nameof(TextArgument.Name));
+			writer.WriteFStringValue(argument.Name);
+
+			WriteArgumentValue(argument.Value, writer);
+
+			writer.WriteEndObject();
+		}
+
+		public static TextArgumentValue ReadArgumentValue(JsonReader reader)
+		{
+			TextArgumentValue argument = new();
+			JToken? argumentValue = null;
+			while (reader.Read())
+			{
+				if (reader.TokenType == JsonToken.EndObject)
+				{
+					break;
+				}
+
+				if (reader.TokenType == JsonToken.PropertyName)
+				{
+					switch (reader.Value)
+					{
+						case nameof(TextArgumentValue.Type):
+							argument.Type = (EFormatArgumentType)reader.ReadAsInt32()!;
+							break;
+						case nameof(TextArgumentValue.Value):
+							if (reader.ReadAndMoveToContent())
+							{
+								argumentValue = JToken.ReadFrom(reader);
+							}
+							break;
+					}
+				}
+			}
+
+			if (argumentValue is not null)
+			{
+				switch (argument.Type)
+				{
+					case EFormatArgumentType.Int:
+						argument.Value = (int)argumentValue;
+						break;
+					case EFormatArgumentType.UInt:
+						argument.Value = (uint)argumentValue;
+						break;
+					case EFormatArgumentType.Float:
+						argument.Value = (float)argumentValue;
+						break;
+					case EFormatArgumentType.Double:
+						argument.Value = (double)argumentValue;
+						break;
+					case EFormatArgumentType.Text:
+						argument.Value = TextSerializer.FromJson(argumentValue.CreateReader());
+						break;
+					case EFormatArgumentType.Gender:
+						argument.Value = (ETextGender)(int)argumentValue;
+						break;
+				}
+			}
+
+			return argument;
+		}
+
+		public static void WriteArgumentValue(TextArgumentValue argument, JsonWriter writer)
+		{
+			writer.WriteStartObject();
+
+			writer.WritePropertyName(nameof(TextArgumentValue.Type));
+			writer.WriteValue((int)argument.Type);
+
+			writer.WritePropertyName(nameof(TextArgumentValue.Value));
+			switch (argument.Type)
+			{
+				case EFormatArgumentType.Int:
+				case EFormatArgumentType.UInt:
+				case EFormatArgumentType.Float:
+				case EFormatArgumentType.Double:
+					writer.WriteValue(argument.Value);
+					break;
+				case EFormatArgumentType.Text:
+					TextSerializer.ToJson((FText)argument.Value, writer);
+					break;
+				case EFormatArgumentType.Gender:
+					writer.WriteValue((byte)(ETextGender)argument.Value);
+					break;
+			}
+
+			writer.WriteEndObject();
 		}
 	}
 }

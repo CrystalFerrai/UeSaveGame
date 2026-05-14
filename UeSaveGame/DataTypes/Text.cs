@@ -32,7 +32,11 @@ namespace UeSaveGame.DataTypes
 			{
 				{ TextHistoryType.None, typeof(TextData_None) },
 				{ TextHistoryType.Base, typeof(TextData_Base) },
+				{ TextHistoryType.NamedFormat, typeof(TextData_NamedFormat) },
+				{ TextHistoryType.OrderedFormat, typeof(TextData_OrderedFormat) },
 				{ TextHistoryType.ArgumentFormat, typeof(TextData_ArgumentFormat) },
+				{ TextHistoryType.AsNumber, typeof(TextData_AsNumber) },
+				{ TextHistoryType.AsPercent, typeof(TextData_AsPercent) },
 				{ TextHistoryType.AsDateTime, typeof(TextData_AsDateTime) },
 				{ TextHistoryType.StringTableEntry, typeof(TextData_StringTableEntry) }
 			};

@@ -245,7 +245,7 @@ namespace UeSaveGame.Json.PropertySerializers
 
 						if (valueReader.TokenType == JsonToken.StartObject)
 						{
-							FProperty item = FProperty.Create(FString.Empty, arrayProperty.ItemType);
+							FProperty item = FProperty.Create(property.mPropertyName, arrayProperty.ItemType);
 							serializer.FromJson(item, valueReader);
 							itemList.Add(item);
 						}

@@ -29,7 +29,11 @@ namespace UeSaveGame.Json.TextDataSerializers
 			sDataSerializers = new()
 			{
 				{ TextHistoryType.None, new TextDataSerializer_None() },
+				{ TextHistoryType.NamedFormat, new TextDataSerializer_NamedFormat() },
+				{ TextHistoryType.OrderedFormat, new TextDataSerializer_OrderedFormat() },
 				{ TextHistoryType.ArgumentFormat, new TextDataSerializer_ArgumentFormat() },
+				{ TextHistoryType.AsNumber, new TextDataSerializer_AsNumber() },
+				{ TextHistoryType.AsPercent, new TextDataSerializer_AsPercent() },
 				{ TextHistoryType.Base, new TextDataSerializer_Base() },
 				{ TextHistoryType.AsDateTime, new TextDataSerializer_AsDateTime() },
 				{ TextHistoryType.StringTableEntry, new TextDataSerializer_StringTableEntry() }
