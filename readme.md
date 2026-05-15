@@ -38,6 +38,7 @@ The following games have been tested using the library. Testing consists of load
 * Soulmask - The Sqlite save file contains actor data blobs that are LZ4 compressed. The decompressed data is a property list compatible with `PropertySerializationHelper.ReadProperties`.
 
 ### Not working
+* ARK: Survival Evolved - Uses a string table rather than inline strings. Support for this has not been implemented.
 * Dragon Quest XI - Files are compressed. Have not attempted to decompress and examine
 * Moss - Crashes, cause unknown, needs investigation
 * Satisfactory - Missing file headers, could possibly be made to work but tools exist for this game already
