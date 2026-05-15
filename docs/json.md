@@ -97,6 +97,57 @@ internal class BlobStructSerializer : StructDataSerializerBase
 }
 ```
 
+## Custom Property Serializers (IPropertySerializer)
+
+When you have a custom `FProperty` serializer, you will usually need a corresponding json serializer if you are using the json module. Implement the `IPropertySerializer` generic class. Register the serializer by calling the following function.
+
+```cs
+// Register MyObjectPropertySerializer as a custom Json serializer for ObjectProperty
+PropertiesSerializer.RegisterPropertySerializer(nameof(ObjectProperty), new MyObjectPropertySerializer());
+```
+
+Note: The serializer instance you pass in will be reused for every instance of the named property, so avoid doing anything stateful that might have unintended side effects on other property instances.
+
+The following example implementation corresponds to the example in the [Extension Points](extension.md) document.
+
+```cs
+internal class MyObjectPropertySerializer : IPropertySerializer
+{
+    public void ToJson(FProperty property, JsonWriter writer)
+    {
+        MyObjectProperty objectProperty = (MyObjectProperty)property;
+
+        writer.WritePropertyName(nameof(ObjectProperty.ObjectType));
+        writer.WriteFStringValue(objectProperty.ObjectType);
+
+        // Add custom serialization as needed
+    }
+
+    public void FromJson(FProperty property, JsonReader reader)
+    {
+        MyObjectProperty objectProperty = (MyObjectProperty)property;
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonToken.EndObject)
+            {
+                break;
+            }
+
+            if (reader.TokenType == JsonToken.PropertyName)
+            {
+                switch ((string)reader.Value!)
+                {
+                    case nameof(ObjectProperty.ObjectType):
+                        objectProperty.ObjectType = reader.ReadAsFString();
+                        break;
+                    // Add cases for custom MyObjectProperty property names
+                }
+            }
+        }
+    }
+}
+```
+
 ## Custom Save Class Serializers (SaveClassSerializerBase)
 
 Whenever you have a custom `SaveClassBase` serializer, you will usually need a corresponding json serializer if you are using the json module. Extend the `SaveClassSerializerBase` generic class.

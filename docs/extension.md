@@ -6,6 +6,8 @@ The `UeSaveGame` library is designed to handle standard Unreal Engine data seria
 
 The most common form of custom serialization in use by games is when they create a `USTRUCT` and override its serialization. `UeSaveGame` may detect this and throw an exception, or it may attempt to interpret it as a standard struct and fail with an unexpected error. In either case, the solution is to implement serialization for the custom type.
 
+Another feature is overriding the serialization of a struct based on specific property names. This can be particularly useful when working with `TMap` or `TSet` properties in versions of UE prior to 5.4 where the struct type is not included in the save data for maps and sets. The library will try to guess at the type when possible, but may fail or guess incorrectly. You can override the serialization in these cases based on the names of the properties.
+
 Any class defined in a loaded assembly that references `UeSaveGame` which implements the `IStructData` interface will be detected and called when serializing structs of the specific type(s) indicated by the class. The `BaseStructData` class is offered as a convenient base class which implements the interface and allows you to override what you need to.
 
 Here is a very basic implementation of a custom struct serializer. All it does is copy the bytes into a buffer during desrialize then write them back during serialize.
@@ -14,6 +16,9 @@ Here is a very basic implementation of a custom struct serializer. All it does i
 internal class BlobStruct : BaseStructData
 {
     public byte[]? Value;
+
+	// Note: Usually you want to specify either types or property names depending
+	// on the use case, rarely is there a case to specify both.
 
     public override IEnumerable<string> StructTypes
     {
@@ -24,6 +29,13 @@ internal class BlobStruct : BaseStructData
             yield return "FMyGameStructB";
         }
     }
+	
+	public override ISet<string>? KnownPropertyNames => new HashSet<string>()
+	{
+		// List names of properties that should be handled by this class
+		"MyProperty1",
+		"MyProperty2"
+	};
 
     public override void Deserialize(BinaryReader reader, int size, PackageVersion engineVersion)
     {
@@ -45,7 +57,43 @@ internal class BlobStruct : BaseStructData
 
 The above example is a good starting point to work from. It will allow the library to get past the data and move on. You can then try to decode the data into something more meaningful later.
 
-NOTE: The `StructTypes` property may be removed in the future and replaced with a class attribute to bring it more in line with how custom save class serializers work.
+## Custom Property Serializers (FProperty)
+
+Some games may implement custom serialization for certain property types. This most commonly happens with `ObjectProperty` where a game may want to store additional information about game objects. You can create a custom `FProperty` implementation and register it for a specific property type by name like this.
+
+```cs
+// Register MyObjectProperty as the serializer for ObjectProperty instances
+FProperty.RegisterPropertyType(nameof(ObjectProperty), typeof(MyObjectProperty));
+```
+
+Here is an example implemenmtation of a custom object property.
+
+```cs
+internal class MyObjectProperty : ObjectProperty
+{
+	// Add properties to store custom data
+
+	protected override void DeserializeValue(BinaryReader reader, int size, PackageVersion packageVersion)
+	{
+		// Optionally call base if it makes sense
+		base.DeserializeValue(reader, size, packageVersion);
+
+		// Add custom deserializtion code as needed
+	}
+
+	protected override int SerializeValue(BinaryWriter writer, PackageVersion packageVersion)
+	{
+		// Optionally call base if it makes sense
+		base.SerializeValue(writer, packageVersion);
+
+		// Add custom serializtion code as needed
+	}
+}
+```
+
+## Custom Property Json Serializers (IPropertySerializer)
+
+Part of the `UeSaveGame.Json` module. See [Json Module](json.md) for more information.
 
 ## Custom Save Class Serializers (SaveClassBase)
 
