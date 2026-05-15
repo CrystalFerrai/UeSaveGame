@@ -35,6 +35,7 @@ The following games have been tested using the library. Testing consists of load
 * Carnal Instinct - Fully working
 * Icarus - Fully working. There is a block of base64 in prospect json files. Convert it to binary, then decompress with zlib, then use `PropertySerializationHelper.ReadProperties` to read the data. (It is basically a save file with no header.) Or just use [IcarusSaveLib](https://github.com/CrystalFerrai/IcarusSaveLib) which handles all this.
 * Parcel Simulator - Fully working
+* Soulmask - The Sqlite save file contains actor data blobs that are LZ4 compressed. The decompressed data is a property list compatible with `PropertySerializationHelper.ReadProperties`.
 
 ### Not working
 * Dragon Quest XI - Files are compressed. Have not attempted to decompress and examine
