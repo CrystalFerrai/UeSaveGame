@@ -64,7 +64,7 @@ namespace UeSaveGame.DataTypes
 				FString? path = PackageName;
 				if (PackageName is not null && AssetName is not null)
 				{
-					path = new($"{PackageName},{AssetName}");
+					path = new($"{PackageName}.{AssetName}");
 				}
 				writer.WriteUnrealString(path);
 			}
